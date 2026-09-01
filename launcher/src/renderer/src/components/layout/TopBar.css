@@ -1,0 +1,61 @@
+.topbar {
+  height: 56px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  background: var(--bg-panel);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--border-subtle);
+  -webkit-app-region: drag;
+}
+
+.topbar__title {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background: linear-gradient(120deg, var(--text-primary), var(--accent-glow) 60%, var(--nebula-cyan));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.topbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  -webkit-app-region: no-drag;
+}
+
+.topbar__news {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  color: var(--text-secondary);
+  padding: 6px;
+  border-radius: var(--radius-md);
+}
+
+.topbar__news:hover {
+  background: var(--bg-panel-raised);
+}
+
+.topbar__account {
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  background: var(--bg-panel-raised);
+  border: 1px solid transparent;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.topbar__account:hover {
+  border-color: var(--danger);
+  color: var(--text-primary);
+}
+
+.topbar__account-dev {
+  color: var(--accent-glow);
+  font-size: 11px;
+}

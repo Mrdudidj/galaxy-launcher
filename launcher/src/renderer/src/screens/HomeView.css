@@ -1,0 +1,123 @@
+.home-view {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+
+.home-view__hero {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.home-view__skin-frame {
+  filter: drop-shadow(0 0 20px var(--glow-color));
+  animation:
+    home-view-glow-pulse 3.4s ease-in-out infinite,
+    home-view-float 4.5s ease-in-out infinite;
+  border-radius: var(--radius-md);
+}
+
+/* A single drop-shadow stop instead of two — drop-shadow can't be
+   compositor-only like transform/opacity, so halving the stops meaningfully
+   cuts the repaint cost of this animation while it's active. */
+@keyframes home-view-glow-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 14px var(--glow-color));
+  }
+  50% {
+    filter: drop-shadow(0 0 26px var(--glow-color));
+  }
+}
+
+@keyframes home-view-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-16px);
+  }
+}
+
+.home-view__play-overlay {
+  position: absolute;
+  left: 50%;
+  top: 60%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 22px 28px;
+  border-radius: 28px;
+  background: rgba(8, 6, 20, 0.32);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 2;
+}
+
+.home-view__player-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+.home-view__center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.home-view__hint {
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin: 0;
+}
+
+.home-view__instance-pill {
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-panel);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  color: var(--text-primary);
+  font-size: 12px;
+}
+
+.home-view__instance-pill:hover {
+  border-color: var(--accent);
+}
+
+.home-view__instance-pill--muted {
+  color: var(--text-secondary);
+}
+
+.home-view__log {
+  width: 560px;
+  max-width: calc(100vw - 96px);
+  max-height: 160px;
+  overflow-y: auto;
+  padding: 10px 12px;
+  background: var(--bg-panel-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  font-family: "SF Mono", Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  text-align: left;
+}
+
+.home-view__log-line {
+  white-space: pre-wrap;
+  word-break: break-word;
+}

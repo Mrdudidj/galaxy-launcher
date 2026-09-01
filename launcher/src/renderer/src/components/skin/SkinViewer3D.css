@@ -1,0 +1,14 @@
+.skin-viewer-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-panel-raised);
+  border-radius: var(--radius-md);
+}
+
+.skin-viewer-fallback__image {
+  width: 64px;
+  height: 32px;
+  image-rendering: pixelated;
+  border-radius: 4px;
+}

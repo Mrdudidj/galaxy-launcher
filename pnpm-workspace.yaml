@@ -1,0 +1,15 @@
+packages:
+  - "launcher"
+  - "server"
+  - "packages/*"
+allowBuilds:
+  esbuild: true
+  msgpackr-extract: true
+  workerd: true
+# The @xmcl/* packages (Voxelum's minecraft-launcher-core-node) have a publish-tooling
+# bug: several of them declare cross-dependencies on sibling @xmcl/* packages as the
+# literal string "^*" (a mangled `workspace:*` that never got rewritten to a real
+# version on publish), which pnpm can resolve inconsistently. Override to a real,
+# current version so the dependency edge actually links.
+overrides:
+  "@xmcl/unzip": "2.2.0"

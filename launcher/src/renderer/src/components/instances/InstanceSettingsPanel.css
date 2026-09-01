@@ -1,0 +1,119 @@
+.instance-settings-panel {
+  max-width: 380px;
+  padding: 16px;
+  background: var(--bg-panel);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.instance-settings-panel h4 {
+  margin: 0;
+}
+
+.instance-settings-panel__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.instance-settings-panel__field > input {
+  background: var(--bg-panel-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.instance-settings-panel__field > input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.instance-settings-panel__memory-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.instance-settings-panel__memory-row input {
+  width: 80px;
+  background: var(--bg-panel-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.instance-settings-panel__memory-row input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.instance-settings-panel__unit {
+  font-size: 12px;
+}
+
+.instance-settings-panel__quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.instance-settings-panel__quick-actions button {
+  padding: 7px 12px;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-panel-raised);
+  color: var(--text-secondary);
+}
+
+.instance-settings-panel__quick-actions button:hover {
+  color: var(--text-primary);
+  border-color: var(--accent-glow);
+}
+
+.instance-settings-panel__quick-actions button.instance-settings-panel__danger:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+  background: rgba(248, 113, 113, 0.12);
+}
+
+.instance-settings-panel__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.instance-settings-panel__actions button {
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.instance-settings-panel__actions button.instance-settings-panel__save {
+  background: linear-gradient(135deg, var(--nebula-magenta), var(--accent) 55%, var(--nebula-cyan));
+  color: white;
+  border-color: transparent;
+}
+
+.instance-settings-panel__actions button.instance-settings-panel__save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

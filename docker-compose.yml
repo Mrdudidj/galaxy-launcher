@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: galaxy
+      POSTGRES_PASSWORD: galaxy
+      POSTGRES_DB: galaxy_launcher
+    ports:
+      - "5432:5432"
+    volumes:
+      - galaxy-postgres-data:/var/lib/postgresql/data
+
+volumes:
+  galaxy-postgres-data:

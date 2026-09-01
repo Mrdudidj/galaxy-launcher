@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String          @id @default(uuid())
+  mcUuid      String          @unique
+  mcUsername  String
+  createdAt   DateTime        @default(now())
+  lastLoginAt DateTime        @updatedAt
+  coinBalance Int             @default(500)
+  instances   InstanceSync[]
+  inventory   InventoryItem[]
+}
+
+// Placeholder only — no real cross-device sync logic yet, just a seam for later.
+model InstanceSync {
+  id               String   @id @default(uuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id])
+  localId          String
+  name             String
+  minecraftVersion String
+  modLoader        String?
+  updatedAt        DateTime @updatedAt
+}
+
+model ShopItem {
+  id         String          @id @default(uuid())
+  sku        String          @unique
+  name       String
+  category   String // "pet" | "cosmetic" | "emote" | ...
+  priceCoins Int
+  createdAt  DateTime        @default(now())
+  inventory  InventoryItem[]
+}
+
+model InventoryItem {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  shopItemId String
+  shopItem   ShopItem @relation(fields: [shopItemId], references: [id])
+  acquiredAt DateTime @default(now())
+  equipped   Boolean  @default(false)
+}
+
+model News {
+  id          String   @id @default(uuid())
+  title       String
+  body        String
+  publishedAt DateTime @default(now())
+}

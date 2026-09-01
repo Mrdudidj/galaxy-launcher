@@ -1,0 +1,121 @@
+.login-view {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-view__panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  padding: 40px;
+  width: 380px;
+  background: var(--bg-panel);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 0 80px -20px rgba(139, 92, 246, 0.4);
+}
+
+.login-view__brand {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.7));
+  margin-bottom: 4px;
+}
+
+.login-view__title {
+  margin: 0;
+  font-size: 22px;
+}
+
+.login-view__subtitle {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.login-view__ms-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-panel-raised);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.login-view__ms-button:hover {
+  border-color: var(--accent);
+}
+
+.login-view__ms-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.login-view__ms-logo {
+  display: grid;
+  grid-template-columns: repeat(2, 8px);
+  grid-template-rows: repeat(2, 8px);
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.login-view__ms-logo span:nth-child(1) {
+  background: #f25022;
+}
+.login-view__ms-logo span:nth-child(2) {
+  background: #7fba00;
+}
+.login-view__ms-logo span:nth-child(3) {
+  background: #00a4ef;
+}
+.login-view__ms-logo span:nth-child(4) {
+  background: #ffb900;
+}
+
+.login-view__notice {
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: var(--bg-panel-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.login-view__notice--error {
+  color: var(--danger);
+  border-color: rgba(248, 113, 113, 0.4);
+}
+
+.login-view__dev-bypass {
+  margin-top: 8px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 11px;
+  text-decoration: underline;
+  opacity: 0.7;
+}
+
+.login-view__dev-bypass:hover {
+  opacity: 1;
+  color: var(--text-primary);
+}

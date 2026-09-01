@@ -1,0 +1,7 @@
+.pixel-canvas {
+  image-rendering: pixelated;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  cursor: crosshair;
+  touch-action: none;
+}

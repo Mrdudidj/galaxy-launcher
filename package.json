@@ -1,0 +1,19 @@
+{
+  "name": "galaxy-launcher",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@11.24.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev:launcher": "pnpm --filter launcher dev",
+    "dev:server": "pnpm --filter server dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.62.1",
+    "typescript": "^7.0.2"
+  }
+}

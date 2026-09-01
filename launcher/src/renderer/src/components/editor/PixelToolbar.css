@@ -1,0 +1,61 @@
+.pixel-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  border-radius: var(--radius-md);
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  width: fit-content;
+}
+
+.pixel-toolbar__tool {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.pixel-toolbar__tool:hover {
+  border-color: var(--border-subtle);
+  color: var(--text-primary);
+}
+
+.pixel-toolbar__tool--active {
+  background: color-mix(in srgb, var(--accent) 25%, transparent);
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+
+.pixel-toolbar__color {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: none;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.pixel-toolbar__clear {
+  margin-left: 8px;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.pixel-toolbar__clear:hover {
+  color: var(--text-primary);
+  border-color: var(--accent);
+}

@@ -1,0 +1,37 @@
+.play-button {
+  width: 220px;
+  height: 64px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: linear-gradient(135deg, rgba(217, 70, 239, 0.22), rgba(139, 92, 246, 0.22) 50%, rgba(34, 211, 238, 0.22));
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: white;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  box-shadow:
+    0 8px 30px -8px rgba(139, 92, 246, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.play-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, rgba(217, 70, 239, 0.32), rgba(139, 92, 246, 0.32) 50%, rgba(34, 211, 238, 0.32));
+  box-shadow:
+    0 12px 36px -8px rgba(139, 92, 246, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.play-button:disabled {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+  opacity: 0.7;
+  cursor: not-allowed;
+  box-shadow: none;
+}

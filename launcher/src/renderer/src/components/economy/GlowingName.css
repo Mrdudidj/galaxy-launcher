@@ -1,0 +1,24 @@
+.glowing-name {
+  color: #ffffff;
+  text-shadow:
+    0 0 6px var(--glow-color),
+    0 0 14px var(--glow-color),
+    0 0 22px var(--glow-color);
+  animation: glowing-name-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes glowing-name-pulse {
+  0%,
+  100% {
+    text-shadow:
+      0 0 6px var(--glow-color),
+      0 0 14px var(--glow-color),
+      0 0 22px var(--glow-color);
+  }
+  50% {
+    text-shadow:
+      0 0 10px var(--glow-color),
+      0 0 22px var(--glow-color),
+      0 0 34px var(--glow-color);
+  }
+}

@@ -1,0 +1,137 @@
+.settings-view {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 480px;
+}
+
+.settings-view__section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.settings-view__section h3 {
+  margin: 0;
+}
+
+.settings-view__hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.settings-view__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.settings-view__list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--bg-panel);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+}
+
+.settings-view__list-item-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settings-view__list-remove {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  padding: 2px 6px;
+  border-radius: var(--radius-md);
+}
+
+.settings-view__list-remove:hover {
+  color: var(--danger);
+  background: rgba(248, 113, 113, 0.15);
+}
+
+.settings-view__add-button {
+  align-self: flex-start;
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--border-subtle);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.settings-view__add-button:hover {
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+
+.settings-view__inline-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-view__inline-row input[type="text"],
+.settings-view__inline-row input[type="password"],
+.settings-view__inline-row input:not([type]) {
+  flex: 1;
+  background: var(--bg-panel-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.settings-view__inline-row input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.settings-view__saved-hint {
+  font-size: 12px;
+  color: var(--success);
+}
+
+.settings-view__toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.settings-view__inline-code {
+  font-family: monospace;
+  background: var(--bg-panel-raised);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.settings-view__status {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.settings-view__status--connected {
+  color: var(--success);
+}
+
+.settings-view__status--error {
+  color: var(--danger);
+}

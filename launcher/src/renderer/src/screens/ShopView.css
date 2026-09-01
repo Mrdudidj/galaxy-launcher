@@ -1,0 +1,226 @@
+.shop-view {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.shop-view__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.shop-view__header h2 {
+  margin: 0;
+}
+
+.shop-view__header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.shop-view__top {
+  display: flex;
+  gap: 20px;
+  align-items: stretch;
+}
+
+.shop-view__preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+  background: var(--bg-panel);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+.shop-view__redeem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 20px;
+  background: var(--bg-panel);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+.shop-view__redeem-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.shop-view__redeem-row {
+  display: flex;
+  gap: 8px;
+}
+
+.shop-view__redeem-row input {
+  flex: 1;
+  background: var(--bg-panel-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.shop-view__redeem-row input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.shop-view__redeem-row button {
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: linear-gradient(135deg, var(--nebula-magenta), var(--accent) 55%, var(--nebula-cyan));
+  color: white;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.shop-view__redeem-message {
+  font-size: 12px;
+  color: var(--accent-glow);
+}
+
+.shop-view__tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.shop-view__tabs button {
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-panel);
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.shop-view__tabs button.active {
+  background: linear-gradient(135deg, var(--nebula-magenta), var(--accent) 55%, var(--nebula-cyan));
+  color: white;
+  border-color: transparent;
+}
+
+.shop-view__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+}
+
+.shop-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  background: var(--bg-panel);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+.shop-item__icon {
+  position: relative;
+  width: 100%;
+  height: 80px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  color: rgba(255, 255, 255, 0.95);
+  overflow: hidden;
+}
+
+.shop-item__preview-hint {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 4px 0;
+  background: rgba(0, 0, 0, 0.55);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.shop-item:hover .shop-item__preview-hint {
+  opacity: 1;
+}
+
+.shop-view__preview {
+  position: relative;
+}
+
+.shop-view__preview-label {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent-glow);
+  background: rgba(0, 0, 0, 0.4);
+  padding: 3px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.shop-item__name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.shop-item__description {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  flex: 1;
+}
+
+.shop-item__buy {
+  padding: 8px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: linear-gradient(135deg, var(--nebula-magenta), var(--accent) 55%, var(--nebula-cyan));
+  color: white;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.shop-item__buy:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.shop-item__buy--owned {
+  background: var(--bg-panel-raised);
+  color: var(--success);
+}
+
+.shop-item__buy--locked {
+  background: var(--bg-panel-raised);
+  color: var(--text-secondary);
+}
+
+.shop-item--vip {
+  border-color: #b45309;
+  box-shadow: 0 0 0 1px rgba(180, 83, 9, 0.3) inset;
+}
+
+.shop-item--vip .shop-item__name::after {
+  content: " ♕";
+  color: #fbbf24;
+}

@@ -4,6 +4,7 @@ import { CreateInstanceWizard } from "../wizard/CreateInstanceWizard";
 import { useInstancesStore } from "../../state/instancesStore";
 import { useViewStore } from "../../state/viewStore";
 import { InstanceDetailPanel } from "./InstanceDetailPanel";
+import { InstanceQuickActions } from "./InstanceQuickActions";
 import "./InstancesDrawer.css";
 
 const UNGROUPED = "Ohne Kategorie";
@@ -16,7 +17,11 @@ export function InstancesDrawer(): React.JSX.Element {
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [duplicateTarget, setDuplicateTarget] = useState<{ id: string; name: string } | null>(null);
   const [duplicateName, setDuplicateName] = useState("");
-  const [detailTarget, setDetailTarget] = useState<Instance | null>(null);
+  // Two-step flow: a tile click opens the small quickTarget popup
+  // (rename/duplicate/category/"Bearbeiten"); only "Bearbeiten" promotes it
+  // to editTarget, which is what triggers the wide, fully-tabbed panel.
+  const [quickTarget, setQuickTarget] = useState<Instance | null>(null);
+  const [editTarget, setEditTarget] = useState<Instance | null>(null);
   const [shortcutMessage, setShortcutMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -24,12 +29,16 @@ export function InstancesDrawer(): React.JSX.Element {
   }, [isOpen, refresh]);
 
   useEffect(() => {
-    if (!isOpen) setDetailTarget(null);
+    if (!isOpen) {
+      setQuickTarget(null);
+      setEditTarget(null);
+    }
   }, [isOpen]);
 
-  function openDetail(instance: Instance): void {
+  function openQuick(instance: Instance): void {
     select(instance.id);
-    setDetailTarget(instance);
+    setQuickTarget(instance);
+    setEditTarget(null);
   }
 
   const groups = useMemo(() => {
@@ -55,7 +64,8 @@ export function InstancesDrawer(): React.JSX.Element {
   async function confirmDelete(): Promise<void> {
     if (!deleteTarget) return;
     await remove(deleteTarget.id);
-    if (detailTarget?.id === deleteTarget.id) setDetailTarget(null);
+    if (quickTarget?.id === deleteTarget.id) setQuickTarget(null);
+    if (editTarget?.id === deleteTarget.id) setEditTarget(null);
     setDeleteTarget(null);
   }
 
@@ -82,7 +92,7 @@ export function InstancesDrawer(): React.JSX.Element {
         onClick={closeInstances}
       />
       <div
-        className={`instances-drawer ${isOpen ? "instances-drawer--open" : ""} ${detailTarget ? "instances-drawer--detail-open" : ""}`}
+        className={`instances-drawer ${isOpen ? "instances-drawer--open" : ""} ${editTarget ? "instances-drawer--detail-open" : ""}`}
       >
         <div className="instances-drawer__header">
           <h2>Instanzen</h2>
@@ -114,8 +124,8 @@ export function InstancesDrawer(): React.JSX.Element {
                   {groupInstances.map((instance) => (
                     <button
                       key={instance.id}
-                      className={`instance-tile ${instance.id === selectedInstanceId ? "instance-tile--selected" : ""} ${detailTarget?.id === instance.id ? "instance-tile--active" : ""}`}
-                      onClick={() => openDetail(instance)}
+                      className={`instance-tile ${instance.id === selectedInstanceId ? "instance-tile--selected" : ""} ${quickTarget?.id === instance.id || editTarget?.id === instance.id ? "instance-tile--active" : ""}`}
+                      onClick={() => openQuick(instance)}
                       title={`${instance.name} verwalten`}
                     >
                       <div className="instance-tile__icon">
@@ -135,22 +145,32 @@ export function InstancesDrawer(): React.JSX.Element {
             ))}
           </div>
 
-          {detailTarget && (
+          {editTarget ? (
             <InstanceDetailPanel
-              instance={detailTarget}
-              existingGroups={existingGroups}
-              onClose={() => setDetailTarget(null)}
+              instance={editTarget}
+              onClose={() => setEditTarget(null)}
               onSaved={(updated) => {
-                setDetailTarget(updated);
+                setEditTarget(updated);
                 void refresh();
               }}
-              onDuplicate={() => {
-                setDuplicateName(`${detailTarget.name} (Kopie)`);
-                setDuplicateTarget({ id: detailTarget.id, name: detailTarget.name });
-              }}
-              onCreateShortcut={() => void handleCreateShortcut(detailTarget.id, detailTarget.name)}
-              onDelete={() => setDeleteTarget({ id: detailTarget.id, name: detailTarget.name })}
+              onCreateShortcut={() => void handleCreateShortcut(editTarget.id, editTarget.name)}
+              onDelete={() => setDeleteTarget({ id: editTarget.id, name: editTarget.name })}
             />
+          ) : (
+            quickTarget && (
+              <InstanceQuickActions
+                instance={quickTarget}
+                existingGroups={existingGroups}
+                onClose={() => setQuickTarget(null)}
+                onEdit={() => setEditTarget(quickTarget)}
+                onDuplicate={() => {
+                  setDuplicateName(`${quickTarget.name} (Kopie)`);
+                  setDuplicateTarget({ id: quickTarget.id, name: quickTarget.name });
+                  setQuickTarget(null);
+                }}
+                onChanged={() => void refresh()}
+              />
+            )
           )}
         </div>
       </div>

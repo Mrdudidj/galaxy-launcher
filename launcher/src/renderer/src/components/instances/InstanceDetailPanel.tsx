@@ -347,18 +347,14 @@ function ConsoleTab({
 
 export function InstanceDetailPanel({
   instance,
-  existingGroups,
   onClose,
   onSaved,
-  onDuplicate,
   onCreateShortcut,
   onDelete
 }: {
   instance: Instance;
-  existingGroups: string[];
   onClose: () => void;
   onSaved: (updated: Instance) => void;
-  onDuplicate: () => void;
   onCreateShortcut: () => void;
   onDelete: () => void;
 }): React.JSX.Element {
@@ -395,10 +391,8 @@ export function InstanceDetailPanel({
         {tab === "overview" && (
           <InstanceSettingsPanel
             instance={current}
-            existingGroups={existingGroups}
             onClose={onClose}
             onSaved={handleUpdated}
-            onDuplicate={onDuplicate}
             onCreateShortcut={onCreateShortcut}
             onDelete={onDelete}
           />

@@ -13,6 +13,9 @@
 }
 
 .topbar__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-weight: 600;
   letter-spacing: 0.02em;
   background: linear-gradient(120deg, var(--text-primary), var(--accent-glow) 60%, var(--nebula-cyan));

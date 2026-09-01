@@ -4,36 +4,28 @@ import "./InstanceSettingsPanel.css";
 
 export function InstanceSettingsPanel({
   instance,
-  existingGroups,
   onClose,
   onSaved,
-  onDuplicate,
   onCreateShortcut,
   onDelete
 }: {
   instance: Instance;
-  existingGroups: string[];
   onClose: () => void;
   onSaved: (updated: Instance) => void;
-  onDuplicate: () => void;
   onCreateShortcut: () => void;
   onDelete: () => void;
 }): React.JSX.Element {
-  const [name, setName] = useState(instance.name);
   const [minMb, setMinMb] = useState(instance.memory.minMb);
   const [maxMb, setMaxMb] = useState(instance.memory.maxMb);
   const [width, setWidth] = useState(instance.resolution.width);
   const [height, setHeight] = useState(instance.resolution.height);
-  const [group, setGroup] = useState(instance.group ?? "");
   const [isSaving, setIsSaving] = useState(false);
 
   async function handleSave(): Promise<void> {
     setIsSaving(true);
     const updated = await window.galaxy.instances.updateSettings(instance.id, {
-      name,
       memory: { minMb, maxMb: Math.max(maxMb, minMb) },
-      resolution: { width, height, fullscreen: instance.resolution.fullscreen },
-      group: group.trim() ? group.trim() : null
+      resolution: { width, height, fullscreen: instance.resolution.fullscreen }
     });
     setIsSaving(false);
     onSaved(updated);
@@ -41,11 +33,6 @@ export function InstanceSettingsPanel({
 
   return (
     <div className="instance-settings-panel" onClick={(e) => e.stopPropagation()}>
-      <label className="instance-settings-panel__field">
-        <span>Name</span>
-        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Instanzname" />
-      </label>
-
       <label className="instance-settings-panel__field">
         <span>Arbeitsspeicher (RAM)</span>
         <div className="instance-settings-panel__memory-row">
@@ -69,21 +56,6 @@ export function InstanceSettingsPanel({
       </label>
 
       <label className="instance-settings-panel__field">
-        <span>Kategorie</span>
-        <input
-          list="instance-settings-panel-groups"
-          value={group}
-          onChange={(e) => setGroup(e.target.value)}
-          placeholder="z. B. Modpacks, Freunde, Vanilla…"
-        />
-        <datalist id="instance-settings-panel-groups">
-          {existingGroups.map((g) => (
-            <option key={g} value={g} />
-          ))}
-        </datalist>
-      </label>
-
-      <label className="instance-settings-panel__field">
         <span>Auflösung</span>
         <div className="instance-settings-panel__memory-row">
           <input type="number" min={640} value={width} onChange={(e) => setWidth(Number(e.target.value))} />
@@ -93,7 +65,6 @@ export function InstanceSettingsPanel({
       </label>
 
       <div className="instance-settings-panel__quick-actions">
-        <button onClick={onDuplicate}>⧉ Duplizieren</button>
         <button onClick={onCreateShortcut}>🔗 Verknüpfung</button>
         <button className="instance-settings-panel__danger" onClick={onDelete}>
           ✕ Löschen

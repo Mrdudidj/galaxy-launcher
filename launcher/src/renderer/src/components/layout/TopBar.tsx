@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useEconomy } from "../../api/useEconomy";
+import { GalaxyLogo } from "../brand/GalaxyLogo";
 import { CoinBalance } from "../economy/CoinBalance";
 import { GlowingName } from "../economy/GlowingName";
 import { RankBadge } from "../economy/RankBadge";
@@ -16,7 +17,10 @@ export function TopBar(): React.JSX.Element {
 
   return (
     <header className="topbar">
-      <div className="topbar__title">Galaxy Launcher</div>
+      <div className="topbar__title">
+        <GalaxyLogo size={22} />
+        Galaxy Launcher
+      </div>
       <div className="topbar__actions">
         <CoinBalance />
         <button className="topbar__news" title="News" onClick={() => setShowNews(true)}>

@@ -156,45 +156,113 @@
       </div>
     </section>
 
-    <section id="install" class="install reveal">
+    <section id="install" class="install-wizard reveal">
       <h2>Installation</h2>
-      <div class="install-grid">
-        <div class="install-card">
-          <h3><span aria-hidden="true">⊞</span> Windows</h3>
-          <p>Installer herunterladen und ausführen — Galaxy Launcher richtet sich selbst ein.</p>
-          <a class="download-button download-button--windows" href="https://github.com/Mrdudidj/galaxy-launcher/releases/latest">
-            <span class="download-button__icon" aria-hidden="true">⊞</span>
-            <span>
-              <strong>Installer herunterladen</strong>
-              <small>.exe · GitHub Releases</small>
-            </span>
-          </a>
+
+      <div class="wizard" data-step="1" data-os="windows">
+        <div class="wizard__progress">
+          <div class="wizard__progress-step active" data-progress-step="1">
+            <span class="wizard__progress-dot">1</span>
+            <span class="wizard__progress-label">Betriebssystem</span>
+          </div>
+          <div class="wizard__progress-line"></div>
+          <div class="wizard__progress-step" data-progress-step="2">
+            <span class="wizard__progress-dot">2</span>
+            <span class="wizard__progress-label">Anforderungen</span>
+          </div>
+          <div class="wizard__progress-line"></div>
+          <div class="wizard__progress-step" data-progress-step="3">
+            <span class="wizard__progress-dot">3</span>
+            <span class="wizard__progress-label">Installieren</span>
+          </div>
         </div>
 
-        <div class="install-card">
-          <h3><span aria-hidden="true">🐧</span> Linux</h3>
-          <p>Direkt im Terminal — die Befehle holen sich automatisch die jeweils neueste Version.</p>
+        <!-- Step 1: choose OS -->
+        <div class="wizard__panel" data-wizard-step="1">
+          <p class="wizard__question">Für welches Betriebssystem?</p>
+          <div class="os-choice">
+            <button type="button" class="os-choice__button" data-choose-os="windows">
+              <span class="os-choice__icon" aria-hidden="true">⊞</span>
+              <span>Windows</span>
+            </button>
+            <button type="button" class="os-choice__button" data-choose-os="linux">
+              <span class="os-choice__icon" aria-hidden="true">🐧</span>
+              <span>Linux</span>
+            </button>
+          </div>
+        </div>
 
-          <div class="install-tabs">
-            <input type="radio" name="linux-format" id="tab-appimage" checked />
-            <input type="radio" name="linux-format" id="tab-deb" />
-            <div class="install-tabs__labels">
-              <label for="tab-appimage">AppImage</label>
-              <label for="tab-deb">.deb (Ubuntu/Debian)</label>
+        <!-- Step 2: requirements, per OS -->
+        <div class="wizard__panel" data-wizard-step="2" hidden>
+          <div class="wizard__os-content" data-os-content="windows">
+            <h3>Systemanforderungen — Windows</h3>
+            <ul class="wizard__requirements">
+              <li>Windows 10 oder 11</li>
+              <li>4 GB RAM (8 GB empfohlen)</li>
+              <li>Grafikkarte mit OpenGL-4.x-Unterstützung</li>
+            </ul>
+          </div>
+          <div class="wizard__os-content" data-os-content="linux">
+            <h3>Systemanforderungen — Linux</h3>
+            <ul class="wizard__requirements">
+              <li>Aktuelle Distribution mit AppImage- oder .deb-Unterstützung</li>
+              <li>4 GB RAM (8 GB empfohlen)</li>
+              <li>Grafikkarte mit OpenGL-4.x-Unterstützung</li>
+            </ul>
+          </div>
+          <div class="wizard__nav">
+            <button type="button" class="wizard__back" data-wizard-back>Zurück</button>
+            <button type="button" class="wizard__next" data-wizard-next>Weiter</button>
+          </div>
+        </div>
+
+        <!-- Step 3: install method, per OS -->
+        <div class="wizard__panel" data-wizard-step="3" hidden>
+          <div class="wizard__os-content" data-os-content="windows">
+            <h3>Installation — Windows</h3>
+            <div class="wizard-preview">
+              <div class="wizard-preview__step"><span aria-hidden="true">⬇</span>Herunterladen</div>
+              <div class="wizard-preview__arrow" aria-hidden="true">→</div>
+              <div class="wizard-preview__step"><span aria-hidden="true">▶</span>Ausführen</div>
+              <div class="wizard-preview__arrow" aria-hidden="true">→</div>
+              <div class="wizard-preview__step"><span aria-hidden="true">✓</span>Fertig</div>
             </div>
+            <p>Installer herunterladen und ausführen — der Setup-Assistent führt dich durch den Rest.</p>
+            <a class="download-button download-button--windows" href="https://github.com/Mrdudidj/galaxy-launcher/releases/latest">
+              <span class="download-button__icon" aria-hidden="true">⊞</span>
+              <span>
+                <strong>Installer herunterladen</strong>
+                <small>.exe · GitHub Releases</small>
+              </span>
+            </a>
+          </div>
+          <div class="wizard__os-content" data-os-content="linux">
+            <h3>Installation — Linux</h3>
+            <p>Direkt im Terminal — die Befehle holen sich automatisch die jeweils neueste Version.</p>
+            <div class="install-tabs">
+              <input type="radio" name="linux-format" id="tab-appimage" checked />
+              <input type="radio" name="linux-format" id="tab-deb" />
+              <div class="install-tabs__labels">
+                <label for="tab-appimage">AppImage</label>
+                <label for="tab-deb">.deb (Ubuntu/Debian)</label>
+              </div>
 
-            <div class="install-tabs__panel" id="panel-appimage">
-              <pre><code>curl -sL $(curl -s https://api.github.com/repos/Mrdudidj/galaxy-launcher/releases/latest | grep "browser_download_url.*AppImage" | cut -d '"' -f 4) -o GalaxyLauncher.AppImage
+              <div class="install-tabs__panel" id="panel-appimage">
+                <pre><code>curl -sL $(curl -s https://api.github.com/repos/Mrdudidj/galaxy-launcher/releases/latest | grep "browser_download_url.*AppImage" | cut -d '"' -f 4) -o GalaxyLauncher.AppImage
 chmod +x GalaxyLauncher.AppImage
 ./GalaxyLauncher.AppImage</code></pre>
-              <button class="copy-button" type="button" data-copy-target="panel-appimage">Kopieren</button>
-            </div>
+                <button class="copy-button" type="button" data-copy-target="panel-appimage">Kopieren</button>
+              </div>
 
-            <div class="install-tabs__panel" id="panel-deb">
-              <pre><code>curl -sL $(curl -s https://api.github.com/repos/Mrdudidj/galaxy-launcher/releases/latest | grep "browser_download_url.*deb" | cut -d '"' -f 4) -o galaxy-launcher.deb
+              <div class="install-tabs__panel" id="panel-deb">
+                <pre><code>curl -sL $(curl -s https://api.github.com/repos/Mrdudidj/galaxy-launcher/releases/latest | grep "browser_download_url.*deb" | cut -d '"' -f 4) -o galaxy-launcher.deb
 sudo dpkg -i galaxy-launcher.deb</code></pre>
-              <button class="copy-button" type="button" data-copy-target="panel-deb">Kopieren</button>
+                <button class="copy-button" type="button" data-copy-target="panel-deb">Kopieren</button>
+              </div>
             </div>
+          </div>
+          <div class="wizard__nav">
+            <button type="button" class="wizard__back" data-wizard-back>Zurück</button>
           </div>
         </div>
       </div>
@@ -219,32 +287,6 @@ sudo dpkg -i galaxy-launcher.deb</code></pre>
           <summary>Wo melde ich Bugs oder Ideen?</summary>
           <p>Direkt im <a href="https://github.com/Mrdudidj/galaxy-launcher" target="_blank" rel="noopener">GitHub-Repository</a> — Issues und Pull Requests sind willkommen.</p>
         </details>
-      </div>
-    </section>
-
-    <section id="requirements" class="requirements reveal">
-      <h2>Systemanforderungen</h2>
-      <p class="requirements__hint">
-        Galaxy Launcher selbst ist bewusst schlank gehalten — die eigentliche Anforderung kommt von
-        Minecraft: Java Edition selbst.
-      </p>
-      <div class="requirements-grid">
-        <div class="requirements-card">
-          <h3>Minimum</h3>
-          <ul>
-            <li>Windows 10/11 oder eine aktuelle Linux-Distribution</li>
-            <li>4 GB RAM</li>
-            <li>Grafikkarte mit OpenGL-4.x-Unterstützung</li>
-          </ul>
-        </div>
-        <div class="requirements-card">
-          <h3>Empfohlen</h3>
-          <ul>
-            <li>8 GB RAM oder mehr</li>
-            <li>Dedizierte Grafikkarte</li>
-            <li>SSD für schnelle Instanz-Downloads</li>
-          </ul>
-        </div>
       </div>
     </section>
 
@@ -296,8 +338,8 @@ sudo dpkg -i galaxy-launcher.deb</code></pre>
       document.querySelectorAll(".reveal").forEach((el) => el.classList.add("visible"));
     }
 
-    // Copy-to-clipboard for the install command blocks — the only other bit
-    // of JS on the page, since there's no CSS-only way to touch the clipboard.
+    // Copy-to-clipboard for the install command blocks — there's no CSS-only
+    // way to touch the clipboard.
     document.querySelectorAll(".copy-button").forEach((button) => {
       button.addEventListener("click", async () => {
         const panel = document.getElementById(button.dataset.copyTarget);
@@ -312,6 +354,44 @@ sudo dpkg -i galaxy-launcher.deb</code></pre>
           // command is still fully selectable/copyable by hand either way.
         }
       });
+    });
+
+    // Installer-style wizard: two bits of state per .wizard (which step,
+    // which OS) drive which panel/content shows via [hidden] and a CSS
+    // attribute selector on data-os — this function just keeps the step
+    // panels and the progress dots in sync with that state.
+    document.querySelectorAll(".wizard").forEach((wizard) => {
+      function render() {
+        const step = wizard.dataset.step;
+        wizard.querySelectorAll(".wizard__panel").forEach((panel) => {
+          panel.hidden = panel.dataset.wizardStep !== step;
+        });
+        wizard.querySelectorAll(".wizard__progress-step").forEach((dot) => {
+          dot.classList.toggle("active", Number(dot.dataset.progressStep) <= Number(step));
+        });
+      }
+
+      wizard.querySelectorAll("[data-choose-os]").forEach((button) => {
+        button.addEventListener("click", () => {
+          wizard.dataset.os = button.dataset.chooseOs;
+          wizard.dataset.step = "2";
+          render();
+        });
+      });
+      wizard.querySelectorAll("[data-wizard-next]").forEach((button) => {
+        button.addEventListener("click", () => {
+          wizard.dataset.step = String(Number(wizard.dataset.step) + 1);
+          render();
+        });
+      });
+      wizard.querySelectorAll("[data-wizard-back]").forEach((button) => {
+        button.addEventListener("click", () => {
+          wizard.dataset.step = String(Number(wizard.dataset.step) - 1);
+          render();
+        });
+      });
+
+      render();
     });
   </script>
 </body>

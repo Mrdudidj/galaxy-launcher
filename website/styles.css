@@ -441,18 +441,15 @@ section h2 {
   color: var(--text-secondary);
 }
 
-/* Installation */
+/* Installation wizard — a small step-through flow (choose OS -> see its
+   requirements -> see its install method) instead of a flat page, closer to
+   what an actual installer feels like walking through. */
 
-.install-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 20px;
-  align-items: start;
-}
-
-.install-card {
+.wizard {
+  max-width: 640px;
+  margin: 0 auto;
   min-width: 0;
-  padding: 24px;
+  padding: 28px;
   background: var(--bg-panel);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -460,14 +457,202 @@ section h2 {
   border-radius: var(--radius-lg);
 }
 
-.install-card h3 {
-  margin-top: 0;
-  font-size: 18px;
+.wizard__progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 28px;
 }
 
-.install-card > p {
+.wizard__progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  opacity: 0.45;
+  transition: opacity var(--transition-smooth);
+}
+
+.wizard__progress-step.active {
+  opacity: 1;
+}
+
+.wizard__progress-dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--bg-panel-raised);
+  border: 1px solid var(--border-subtle);
+  transition: background var(--transition-smooth), border-color var(--transition-smooth);
+}
+
+.wizard__progress-step.active .wizard__progress-dot {
+  background: linear-gradient(135deg, var(--nebula-violet), var(--accent));
+  border-color: transparent;
+  color: white;
+}
+
+.wizard__progress-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.wizard__progress-line {
+  width: 32px;
+  height: 1px;
+  background: var(--border-subtle);
+  margin-bottom: 18px;
+}
+
+.wizard__panel {
+  animation: view-fade-in-web var(--transition-smooth);
+}
+
+@keyframes view-fade-in-web {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.wizard__question {
+  text-align: center;
+  font-size: 15px;
+  color: var(--text-secondary);
+  margin-top: 0;
+}
+
+.os-choice {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.os-choice__button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 28px 36px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-panel-raised);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  transition: border-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.os-choice__button:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(139, 92, 246, 0.2);
+}
+
+.os-choice__icon {
+  font-size: 30px;
+}
+
+.wizard__os-content {
+  display: none;
+}
+
+.wizard[data-os="windows"] .wizard__os-content[data-os-content="windows"],
+.wizard[data-os="linux"] .wizard__os-content[data-os-content="linux"] {
+  display: block;
+}
+
+.wizard__os-content h3 {
+  margin-top: 0;
+  font-size: 17px;
+}
+
+.wizard__requirements {
+  margin: 0;
+  padding-left: 20px;
   color: var(--text-secondary);
   font-size: 14px;
+  line-height: 1.8;
+}
+
+.wizard-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+  background: var(--bg-void);
+  border-radius: var(--radius-md);
+}
+
+.wizard-preview__step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.wizard-preview__step span {
+  font-size: 20px;
+}
+
+.wizard-preview__arrow {
+  color: var(--border-subtle);
+  font-size: 16px;
+}
+
+.wizard__os-content > p {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.wizard__nav {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 24px;
+}
+
+.wizard__back,
+.wizard__next {
+  padding: 8px 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-panel-raised);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  transition: border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.wizard__back {
+  color: var(--text-secondary);
+  background: transparent;
+}
+
+.wizard__next {
+  background: linear-gradient(135deg, var(--nebula-violet), var(--accent));
+  border-color: transparent;
+  color: white;
+  margin-left: auto;
+}
+
+.wizard__back:hover,
+.wizard__next:hover {
+  transform: translateY(-1px);
 }
 
 .install-tabs {
@@ -577,42 +762,6 @@ section h2 {
   font-size: 14px;
 }
 
-/* Systemanforderungen */
-
-.requirements__hint {
-  max-width: 640px;
-  margin: -20px auto 32px;
-  text-align: center;
-  color: var(--text-secondary);
-  font-size: 14px;
-}
-
-.requirements-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 20px;
-}
-
-.requirements-card {
-  padding: 24px;
-  background: var(--bg-panel);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-}
-
-.requirements-card h3 {
-  margin-top: 0;
-  font-size: 16px;
-}
-
-.requirements-card ul {
-  margin: 0;
-  padding-left: 20px;
-  color: var(--text-secondary);
-  font-size: 14px;
-  line-height: 1.8;
-}
-
 /* Scroll reveal — sections start faded/offset and settle into place once
    in view (see the small IntersectionObserver script at the bottom of
    index.html). Falls back to fully visible with no JS/no observer support. */
@@ -718,5 +867,21 @@ section h2 {
     flex-wrap: wrap;
     gap: 10px 16px;
     font-size: 13px;
+  }
+
+  .wizard {
+    padding: 20px 16px;
+  }
+
+  .os-choice {
+    flex-direction: column;
+  }
+
+  .os-choice__button {
+    padding: 20px;
+  }
+
+  .wizard-preview {
+    flex-wrap: wrap;
   }
 }

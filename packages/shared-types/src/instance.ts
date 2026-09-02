@@ -50,6 +50,7 @@ export const Instance = z.object({
   extraJvmArgs: z.array(z.string()),
   group: z.string().nullable(),
   mods: z.array(InstanceModRef),
-  resourcePacks: z.array(InstanceResourcePackRef)
+  resourcePacks: z.array(InstanceResourcePackRef),
+  companionModVersion: z.string().nullable().default(null)
 });
 export type Instance = z.infer<typeof Instance>;

@@ -1,62 +1,65 @@
-import { FunctionAnimation, type PlayerAnimation } from "skinview3d";
+import { FunctionAnimation, type PlayerAnimation, type PlayerObject } from "skinview3d";
+import { EMOTE_KEYFRAMES, type EmoteBonePose, type EmoteDefinition, type EmoteKeyframe } from "./emoteKeyframes";
 
-// Procedural emote animations built directly on skinview3d's own player rig —
-// no external assets, so there's nothing to license. Each factory returns a
-// fresh PlayerAnimation instance (animations carry mutable internal state, so
-// they can't be shared across concurrently-mounted viewers).
-const EMOTE_ANIMATIONS: Record<string, () => PlayerAnimation> = {
-  "emote-star-wave": () =>
-    new FunctionAnimation((player, progress) => {
-      const t = progress * 4;
-      player.skin.rightArm.rotation.x = 180 + Math.sin(t) * 0.3;
-      player.skin.rightArm.rotation.z = Math.sin(t * 2) * 0.4;
-      player.skin.head.rotation.y = Math.sin(t * 0.7) * 0.2;
-      player.rotation.y = Math.sin(progress * 0.6) * 0.15;
-    }),
+const DEG = Math.PI / 180;
+const BONES: (keyof EmoteBonePose)[] = ["head", "body", "rightArm", "leftArm", "rightLeg", "leftLeg"];
 
-  "emote-galaxy-dance": () =>
-    new FunctionAnimation((player, progress) => {
-      const t = progress * 5;
-      player.rotation.y = Math.sin(t * 0.5) * 0.5;
-      player.skin.leftArm.rotation.z = Math.sin(t) * 0.6 - 0.3;
-      player.skin.rightArm.rotation.z = -(Math.sin(t + Math.PI) * 0.6 - 0.3);
-      player.skin.leftLeg.rotation.x = Math.sin(t) * 0.4;
-      player.skin.rightLeg.rotation.x = -Math.sin(t) * 0.4;
-      player.position.y = Math.abs(Math.sin(t * 2)) * 0.05;
-    }),
+function lerp(a: number, b: number, u: number): number {
+  return a + (b - a) * u;
+}
 
-  "emote-nova-cheer": () =>
-    new FunctionAnimation((player, progress) => {
-      const t = progress * 6;
-      const raise = Math.min(1, progress * 3);
-      player.skin.leftArm.rotation.x = 180 * raise;
-      player.skin.rightArm.rotation.x = 180 * raise;
-      player.skin.leftArm.rotation.z = -0.3;
-      player.skin.rightArm.rotation.z = 0.3;
-      player.position.y = Math.abs(Math.sin(t)) * 0.08 * raise;
-    }),
+// Keyframes are sorted by t; find the pair the given t falls between (or the
+// last one twice, for t >= the final keyframe — holds the final pose).
+function findBracket(keyframes: EmoteKeyframe[], t: number): [EmoteKeyframe, EmoteKeyframe] {
+  for (let i = 0; i < keyframes.length - 1; i++) {
+    if (t >= keyframes[i]!.t && t <= keyframes[i + 1]!.t) return [keyframes[i]!, keyframes[i + 1]!];
+  }
+  const last = keyframes[keyframes.length - 1]!;
+  return [last, last];
+}
 
-  "emote-zero-g-flip": () =>
-    new FunctionAnimation((player, progress) => {
-      player.rotation.x = progress * Math.PI;
-      player.position.y = Math.abs(Math.sin(progress * Math.PI)) * 0.3;
-    }),
+// Linear interpolation only — this codebase doesn't use easing curves anywhere
+// else either, and nothing here needs more than that.
+function applyKeyframes(player: PlayerObject, t: number, def: EmoteDefinition): void {
+  const [a, b] = findBracket(def.keyframes, t);
+  const span = b.t - a.t;
+  const u = span > 0 ? (t - a.t) / span : 0;
 
-  "emote-vip-supernova": () =>
-    new FunctionAnimation((player, progress) => {
-      const t = progress * 4;
-      player.rotation.y = progress * 1.2;
-      player.skin.leftArm.rotation.x = 170;
-      player.skin.rightArm.rotation.x = 170;
-      player.skin.head.rotation.x = -0.15;
-      player.position.y = Math.abs(Math.sin(t * 1.5)) * 0.1;
-    })
-};
+  for (const bone of BONES) {
+    const poseA = a.pose[bone];
+    const poseB = b.pose[bone];
+    if (!poseA && !poseB) continue;
+    const from = poseA ?? [0, 0, 0];
+    const to = poseB ?? [0, 0, 0];
+    player.skin[bone].rotation.set(
+      lerp(from[0], to[0], u) * DEG,
+      lerp(from[1], to[1], u) * DEG,
+      lerp(from[2], to[2], u) * DEG
+    );
+  }
+
+  player.rotation.y = lerp(a.playerYaw ?? 0, b.playerYaw ?? 0, u) * DEG;
+  player.rotation.x = lerp(a.playerPitch ?? 0, b.playerPitch ?? 0, u) * DEG;
+  player.position.y = lerp(a.playerBobY ?? 0, b.playerBobY ?? 0, u);
+}
+
+function createKeyframeAnimation(def: EmoteDefinition): PlayerAnimation {
+  return new FunctionAnimation((player, progress) => {
+    // `progress` is real elapsed seconds (skinview3d advances it via
+    // THREE.Clock().getDelta()) and grows without bound — wrap it into a
+    // repeating 0..1 sweep at this emote's own pace for a continuous preview
+    // loop. The old per-emote sine formulas got looping "for free" from
+    // Math.sin's own periodicity; a keyframe/lerp approach needs it explicit.
+    const t = (progress / def.cycleSeconds) % 1;
+    applyKeyframes(player, t, def);
+  });
+}
 
 export function getEmoteAnimation(itemId: string): PlayerAnimation | null {
-  return EMOTE_ANIMATIONS[itemId]?.() ?? null;
+  const def = EMOTE_KEYFRAMES[itemId];
+  return def ? createKeyframeAnimation(def) : null;
 }
 
 export function hasEmoteAnimation(itemId: string): boolean {
-  return itemId in EMOTE_ANIMATIONS;
+  return itemId in EMOTE_KEYFRAMES;
 }

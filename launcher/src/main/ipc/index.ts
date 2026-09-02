@@ -13,10 +13,39 @@ import {
 } from "../services/discord/discordRpcService.js";
 import { pickFiles, pickSaveLocation } from "../services/dialogs.js";
 import { isGameRunning, killActiveGame, launchInstance } from "../services/minecraft/launchInstance.js";
+import { installMod, searchMods } from "../services/mods/modrinthService.js";
 import { getEconomy, purchaseItem, redeemCode, setEquipped, setRank } from "../services/economy/economyStore.js";
 import { SHOP_CATALOG } from "../services/economy/shopCatalog.js";
+import {
+  adjustCoins,
+  approveReport,
+  createReport,
+  getModerationState,
+  grantItem,
+  readChatOutbox,
+  rejectReport,
+  revokeItem,
+  suspendAccount,
+  tempBanAccount,
+  undoAuditEntry,
+  warnPlayer
+} from "../services/moderation/moderationStore.js";
 import { createDesktopShortcut } from "../services/shortcuts/shortcutService.js";
 import { getSkinState, saveCustomSkin, setGlowColor } from "../services/skins/skinStore.js";
+import { adjustVolume, getPlaybackState, next, playPause, playUri, previous } from "../services/spotify/spotifyControl.js";
+import { searchTracks } from "../services/spotify/spotifySearchService.js";
+import {
+  clearSpotifyClientSecret,
+  hasSpotifyClientSecret,
+  setSpotifyClientSecret
+} from "../services/spotify/spotifySecretStore.js";
+import {
+  hideSpotifyWidget,
+  registerControlHotkey,
+  registerPinHotkey,
+  showSpotifyWidget,
+  toggleSpotifyWidgetPin
+} from "../windows/spotifyWidgetWindow.js";
 import { listFabricLoaders } from "../services/minecraft/fabric.js";
 import { installInstanceFiles, type InstallInstanceInput } from "../services/minecraft/installInstance.js";
 import { listReleaseVersions } from "../services/minecraft/versionManifest.js";
@@ -24,7 +53,8 @@ import {
   addDefaultMod,
   getSettings,
   removeDefaultMod,
-  updateDiscordRpcSettings
+  updateDiscordRpcSettings,
+  updateSpotifySettings
 } from "../services/settings/settingsStore.js";
 import {
   addLocalMods,
@@ -47,7 +77,8 @@ import {
   updateInstance
 } from "../services/instances/instanceStore.js";
 import { getWizardDefaults, updateWizardDefaults } from "../services/instances/wizardDefaults.js";
-import type { InstanceSettingsPatch, ServerEntry, WizardDefaults } from "../../shared/instance.js";
+import { applyCustomTexture, listTextures, readTexturePng, readTexturePngBatch } from "../services/textures/textureCatalog.js";
+import type { AppSettings, InstanceSettingsPatch, ServerEntry, WizardDefaults } from "../../shared/instance.js";
 import type { Rank } from "../../shared/economy.js";
 
 function getLaunchInstanceId(): string | null {
@@ -110,6 +141,24 @@ export function registerIpcHandlers(): void {
     removeResourcePack(instanceId, fileName)
   );
 
+  ipcMain.handle("textures:list", (_event, instanceId: string) => listTextures(instanceId));
+
+  ipcMain.handle("textures:read", (_event, instanceId: string, texturePath: string) =>
+    readTexturePng(instanceId, texturePath)
+  );
+
+  ipcMain.handle("textures:readBatch", (_event, instanceId: string, texturePaths: string[]) =>
+    readTexturePngBatch(instanceId, texturePaths)
+  );
+
+  ipcMain.handle("textures:apply", (_event, instanceId: string, texturePath: string, base64Png: string) =>
+    applyCustomTexture(instanceId, texturePath, base64Png)
+  );
+
+  ipcMain.handle("mods:search", (_event, instanceId: string, query: string) => searchMods(instanceId, query));
+
+  ipcMain.handle("mods:install", (_event, instanceId: string, projectId: string) => installMod(instanceId, projectId));
+
   ipcMain.handle("dialogs:addMods", async (event, instanceId: string) => {
     const window = BrowserWindow.fromWebContents(event.sender);
     if (!window) return;
@@ -166,6 +215,36 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle("economy:setRank", (_event, rank: Rank) => setRank(rank));
 
+  ipcMain.handle("moderation:getState", () => getModerationState());
+
+  ipcMain.handle("moderation:readChatOutbox", (_event, instanceId: string) => readChatOutbox(instanceId));
+
+  ipcMain.handle(
+    "moderation:createReport",
+    (_event, messageText: string, source: "outbox" | "manual", playerName: string | null) =>
+      createReport(messageText, source, playerName)
+  );
+
+  ipcMain.handle("moderation:approveReport", (_event, reportId: string) => approveReport(reportId));
+
+  ipcMain.handle("moderation:rejectReport", (_event, reportId: string) => rejectReport(reportId));
+
+  ipcMain.handle("moderation:warnPlayer", (_event, reason: string) => warnPlayer(reason));
+
+  ipcMain.handle("moderation:grantItem", (_event, itemId: string) => grantItem(itemId));
+
+  ipcMain.handle("moderation:revokeItem", (_event, itemId: string) => revokeItem(itemId));
+
+  ipcMain.handle("moderation:adjustCoins", (_event, amount: number, reason: string) => adjustCoins(amount, reason));
+
+  ipcMain.handle("moderation:suspendAccount", (_event, reason: string) => suspendAccount(reason));
+
+  ipcMain.handle("moderation:tempBanAccount", (_event, durationHours: number, reason: string) =>
+    tempBanAccount(durationHours, reason)
+  );
+
+  ipcMain.handle("moderation:undoAuditEntry", (_event, entryId: string) => undoAuditEntry(entryId));
+
   ipcMain.handle("app:getLaunchInstanceId", () => getLaunchInstanceId());
 
   ipcMain.handle("instances:createShortcut", (_event, id: string, name: string) => createDesktopShortcut(id, name));
@@ -201,6 +280,52 @@ export function registerIpcHandlers(): void {
   ipcMain.handle("discord:setActivity", (_event, details: string, state: string) =>
     setDiscordActivity(details, state)
   );
+
+  ipcMain.handle(
+    "settings:updateSpotify",
+    (_event, patch: Partial<Omit<AppSettings["spotify"], "controlKey">>) => updateSpotifySettings(patch)
+  );
+
+  ipcMain.handle("spotify:getPlaybackState", () => getPlaybackState());
+
+  ipcMain.handle("spotify:playPause", () => playPause());
+
+  ipcMain.handle("spotify:next", () => next());
+
+  ipcMain.handle("spotify:previous", () => previous());
+
+  ipcMain.handle("spotify:adjustVolume", (_event, delta: number) => adjustVolume(delta));
+
+  ipcMain.handle("spotify:playUri", async (_event, uri: string) => {
+    const { launchCommand } = (await getSettings()).spotify;
+    return playUri(uri, launchCommand);
+  });
+
+  ipcMain.handle("spotify:search", (_event, query: string) => searchTracks(query));
+
+  ipcMain.handle("spotify:hasClientSecret", () => hasSpotifyClientSecret());
+
+  ipcMain.handle("spotify:setClientSecret", (_event, secret: string) => setSpotifyClientSecret(secret));
+
+  ipcMain.handle("spotify:clearClientSecret", () => clearSpotifyClientSecret());
+
+  ipcMain.handle("spotify:showWidget", () => showSpotifyWidget());
+
+  ipcMain.handle("spotify:hideWidget", () => hideSpotifyWidget());
+
+  ipcMain.handle("spotify:togglePin", () => toggleSpotifyWidgetPin());
+
+  ipcMain.handle("spotify:setPinHotkey", async (_event, accelerator: string) => {
+    const ok = registerPinHotkey(accelerator);
+    if (ok) await updateSpotifySettings({ pinHotkey: accelerator });
+    return ok;
+  });
+
+  ipcMain.handle("spotify:setControlKey", async (_event, accelerator: string) => {
+    const ok = registerControlHotkey(accelerator);
+    if (ok) await updateSpotifySettings({ controlKey: accelerator });
+    return ok;
+  });
 
   ipcMain.handle("dialogs:saveTexture", async (event, defaultName: string, base64Png: string) => {
     const window = BrowserWindow.fromWebContents(event.sender);

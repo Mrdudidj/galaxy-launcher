@@ -42,6 +42,66 @@ export const SHOP_CATALOG: ShopItem[] = [
     colorTo: "#7c3aed"
   },
   {
+    id: "emote-star-mockery",
+    name: "Sternenspott",
+    description: "Zeigt spöttisch und lacht dabei — nichts für Verlierer mit dünner Haut.",
+    category: "emote",
+    price: 175,
+    icon: "☆",
+    colorFrom: "#f59e0b",
+    colorTo: "#7c3aed"
+  },
+  {
+    id: "emote-cold-shoulder",
+    name: "Kalte Schulter",
+    description: "Dreht dir demonstrativ den Rücken zu.",
+    category: "emote",
+    price: 175,
+    icon: "❄",
+    colorFrom: "#22d3ee",
+    colorTo: "#3730a3"
+  },
+  {
+    id: "emote-noodle-arms",
+    name: "Nudelarme",
+    description: "Komplett entspannt — die Arme wackeln einfach mit.",
+    category: "emote",
+    price: 150,
+    icon: "〰",
+    colorFrom: "#d946ef",
+    colorTo: "#f59e0b"
+  },
+  {
+    id: "emote-astro-stumble",
+    name: "Astro-Stolperer",
+    description: "Verliert kurz das Gleichgewicht — und fängt sich gerade noch.",
+    category: "emote",
+    price: 150,
+    icon: "⁉",
+    colorFrom: "#7c3aed",
+    colorTo: "#22d3ee"
+  },
+  {
+    id: "emote-warm-greeting",
+    name: "Herzlicher Gruß",
+    description: "Winkt mit beiden Armen und verbeugt sich freundlich.",
+    category: "emote",
+    price: 175,
+    icon: "☺",
+    colorFrom: "#fde047",
+    colorTo: "#d946ef"
+  },
+  {
+    id: "emote-applause",
+    name: "Applaus",
+    description: "Klatscht begeistert Beifall.",
+    category: "emote",
+    price: 175,
+    icon: "👏",
+    colorFrom: "#22d3ee",
+    colorTo: "#7c3aed"
+  },
+  {
     id: "hat-nebula-crown",
     name: "Nebel-Krone",
     description: "Eine Krone aus verdichtetem Nebeldunst.",
@@ -89,7 +149,8 @@ export const SHOP_CATALOG: ShopItem[] = [
     price: 400,
     icon: "🚀",
     colorFrom: "#7c3aed",
-    colorTo: "#4c1d95"
+    colorTo: "#4c1d95",
+    outfitSkinAsset: "violet-suit.png"
   },
   {
     id: "outfit-cyan-protocol",
@@ -99,7 +160,8 @@ export const SHOP_CATALOG: ShopItem[] = [
     price: 400,
     icon: "🚀",
     colorFrom: "#22d3ee",
-    colorTo: "#0e7490"
+    colorTo: "#0e7490",
+    outfitSkinAsset: "cyan-protocol.png"
   },
   {
     id: "hat-vip-diadem",
@@ -121,7 +183,8 @@ export const SHOP_CATALOG: ShopItem[] = [
     icon: "✨",
     colorFrom: "#fde047",
     colorTo: "#d97706",
-    vipOnly: true
+    vipOnly: true,
+    outfitSkinAsset: "vip-robe.png"
   },
   {
     id: "emote-vip-supernova",
@@ -133,6 +196,17 @@ export const SHOP_CATALOG: ShopItem[] = [
     colorFrom: "#fde047",
     colorTo: "#f59e0b",
     vipOnly: true
+  },
+  {
+    id: "pet-galaxy-companion",
+    name: "Logo-Begleiter",
+    description: "Ein kleiner Begleitplanet mit Ring und Sternenstaub — exklusiv für die ersten 10 Gründer.",
+    category: "pet",
+    price: 0,
+    icon: "🪐",
+    colorFrom: "#7c3aed",
+    colorTo: "#22d3ee",
+    founderOnly: true
   },
   {
     id: "glow-neon",

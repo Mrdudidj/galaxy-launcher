@@ -3,8 +3,10 @@ packages:
   - "server"
   - "packages/*"
 allowBuilds:
+  electron-winstaller: true
   esbuild: true
   msgpackr-extract: true
+  usocket: true
   workerd: true
 # The @xmcl/* packages (Voxelum's minecraft-launcher-core-node) have a publish-tooling
 # bug: several of them declare cross-dependencies on sibling @xmcl/* packages as the

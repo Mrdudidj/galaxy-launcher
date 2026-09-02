@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { Instance } from "@galaxy-launcher/shared-types";
-import type { ModSuggestion, ServerEntry } from "../../../../shared/instance";
+import type { ModInstallResult, ModrinthSearchHit, ModSuggestion, ServerEntry } from "../../../../shared/instance";
 import { useLaunchStore } from "../../state/launchStore";
 import { DownloadButton } from "./DownloadButton";
 import { InstanceSettingsPanel } from "./InstanceSettingsPanel";
@@ -35,6 +35,13 @@ function ModsTab({
   const [isAsking, setIsAsking] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
 
+  const [modQuery, setModQuery] = useState("");
+  const [modResults, setModResults] = useState<ModrinthSearchHit[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [installingProjectId, setInstallingProjectId] = useState<string | null>(null);
+  const [installMessage, setInstallMessage] = useState<string | null>(null);
+
   async function refresh(): Promise<void> {
     const updated = await refetchInstance(instance.id);
     if (updated) onChanged(updated);
@@ -50,6 +57,41 @@ function ModsTab({
   async function handleRemove(fileName: string): Promise<void> {
     await window.galaxy.instances.removeMod(instance.id, fileName);
     await refresh();
+  }
+
+  async function handleSearchMods(): Promise<void> {
+    if (!modQuery.trim()) return;
+    setIsSearching(true);
+    setSearchError(null);
+    setInstallMessage(null);
+    try {
+      const hits = await window.galaxy.mods.search(instance.id, modQuery.trim());
+      setModResults(hits);
+    } catch (error) {
+      setSearchError(error instanceof Error ? error.message : "Mod-Suche fehlgeschlagen.");
+    } finally {
+      setIsSearching(false);
+    }
+  }
+
+  async function handleInstallMod(projectId: string): Promise<void> {
+    setInstallingProjectId(projectId);
+    setSearchError(null);
+    setInstallMessage(null);
+    try {
+      const result: ModInstallResult = await window.galaxy.mods.install(instance.id, projectId);
+      await refresh();
+      const extra = result.installedFileNames.length - 1;
+      setInstallMessage(
+        extra > 0
+          ? `Installiert (+${extra} Abhängigkeit${extra > 1 ? "en" : ""}).`
+          : "Installiert."
+      );
+    } catch (error) {
+      setSearchError(error instanceof Error ? error.message : "Installation fehlgeschlagen.");
+    } finally {
+      setInstallingProjectId(null);
+    }
   }
 
   async function handleAskAi(): Promise<void> {
@@ -83,6 +125,59 @@ function ModsTab({
       <button className="instance-detail-panel__add-button" onClick={() => void handleAdd()} disabled={isAdding}>
         {isAdding ? "Öffne Dateiauswahl…" : "+ Mod-Datei hinzufügen"}
       </button>
+
+      {instance.modLoader.type === "vanilla" ? (
+        <p className="instance-detail-panel__hint">Mod-Suche benötigt Fabric, Forge oder Quilt.</p>
+      ) : (
+        <div className="instance-detail-panel__mod-search">
+          <span className="instance-detail-panel__ai-label">🔍 Mods durchsuchen</span>
+          <div className="instance-detail-panel__mod-search-row">
+            <input
+              value={modQuery}
+              onChange={(e) => setModQuery(e.target.value)}
+              placeholder="z. B. Sodium, Iris, JEI…"
+              onKeyDown={(e) => e.key === "Enter" && void handleSearchMods()}
+            />
+            <button onClick={() => void handleSearchMods()} disabled={isSearching}>
+              {isSearching ? "Suche…" : "Suchen"}
+            </button>
+          </div>
+          {searchError && <p className="instance-detail-panel__ai-error">{searchError}</p>}
+          {installMessage && <p className="instance-detail-panel__hint">{installMessage}</p>}
+          {modResults.length > 0 && (
+            <div className="instance-detail-panel__mod-search-results">
+              {modResults.map((hit) => {
+                const alreadyInstalled = instance.mods.some((m) => m.projectId === hit.projectId);
+                return (
+                  <div className="instance-detail-panel__mod-search-result" key={hit.projectId}>
+                    <div className="instance-detail-panel__mod-search-result-icon">
+                      {hit.iconUrl && <img src={hit.iconUrl} alt="" />}
+                    </div>
+                    <div className="instance-detail-panel__mod-search-result-info">
+                      <strong>{hit.title}</strong>
+                      <span className="instance-detail-panel__mod-search-result-meta">
+                        von {hit.author} · {hit.downloads.toLocaleString("de-DE")} Downloads
+                      </span>
+                      <span className="instance-detail-panel__mod-search-result-desc">{hit.description}</span>
+                    </div>
+                    <button
+                      className="instance-detail-panel__mod-search-install"
+                      onClick={() => void handleInstallMod(hit.projectId)}
+                      disabled={alreadyInstalled || installingProjectId === hit.projectId}
+                    >
+                      {alreadyInstalled
+                        ? "✓ Installiert"
+                        : installingProjectId === hit.projectId
+                          ? "Installiere…"
+                          : "+ Installieren"}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="instance-detail-panel__ai">
         <span className="instance-detail-panel__ai-label">✨ KI-Mod-Vorschlag</span>

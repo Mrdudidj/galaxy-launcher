@@ -1,6 +1,13 @@
 {
   "name": "launcher",
   "productName": "Galaxy Launcher",
+  "description": "A custom launcher for Minecraft: Java Edition.",
+  "author": "Galaxy Launcher",
+  "homepage": "https://github.com/Mrdudidj/galaxy-launcher",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Mrdudidj/galaxy-launcher.git"
+  },
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -9,7 +16,38 @@
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
-    "start": "electron-vite preview"
+    "start": "electron-vite preview",
+    "dist:linux": "electron-vite build && electron-builder --linux",
+    "dist:win": "electron-vite build && electron-builder --win"
+  },
+  "build": {
+    "appId": "com.galaxylauncher.app",
+    "productName": "Galaxy Launcher",
+    "directories": {
+      "output": "release"
+    },
+    "files": ["out/**/*", "resources/**/*", "package.json"],
+    "linux": {
+      "target": ["AppImage", "deb"],
+      "icon": "resources/icon.png",
+      "category": "Game",
+      "maintainer": "Galaxy Launcher",
+      "artifactName": "galaxy-launcher-${version}-${arch}.${ext}"
+    },
+    "deb": {
+      "artifactName": "galaxy-launcher_${version}_${arch}.${ext}"
+    },
+    "win": {
+      "target": ["nsis"],
+      "icon": "resources/icon.png",
+      "artifactName": "galaxy-launcher-setup-${version}.${ext}",
+      "extraResources": [
+        {
+          "from": "../windows-helper/bin/Release/net8.0-windows10.0.19041.0/win-x64/publish/GalaxyMediaHelper.exe",
+          "to": "windows-helper/GalaxyMediaHelper.exe"
+        }
+      ]
+    }
   },
   "devDependencies": {
     "@types/node": "^26.4.0",
@@ -18,6 +56,7 @@
     "@types/three": "^0.156.0",
     "@vitejs/plugin-react": "^6.1.1",
     "electron": "^44.0.0",
+    "electron-builder": "^26.15.3",
     "electron-vite": "^5.0.0",
     "typescript": "^7.0.2",
     "vite": "^8.2.2"
@@ -32,6 +71,7 @@
     "@xmcl/task": "^4.1.1",
     "@xmcl/unzip": "2.2.0",
     "@xmcl/user": "^4.4.2",
+    "dbus-next": "^0.10.2",
     "dotenv": "^17.4.2",
     "prismarine-nbt": "^2.8.0",
     "react": "^19.2.8",

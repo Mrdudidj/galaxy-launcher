@@ -3,6 +3,8 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  height: 100%;
+  min-height: 0;
 }
 
 .locker-view h2 {
@@ -19,19 +21,26 @@
   display: flex;
   gap: 20px;
   align-items: flex-start;
+  flex: 1;
+  min-height: 0;
 }
 
 .locker-view__preview {
+  flex-shrink: 0;
+  width: 260px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 16px 24px;
+  gap: 14px;
+  padding: 20px 16px;
   background: var(--bg-panel);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
+  position: sticky;
+  top: 0;
+  filter: drop-shadow(0 0 14px var(--glow-color)) drop-shadow(0 0 28px var(--glow-color));
 }
 
 .locker-view__equipped-badges {
@@ -58,9 +67,11 @@
 
 .locker-view__items {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  overflow-y: auto;
 }
 
 .locker-item {
@@ -69,15 +80,21 @@
   gap: 12px;
   padding: 10px;
   background: var(--bg-panel);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
+  transition: border-color 0.15s ease;
+}
+
+.locker-item--equipped {
+  border-color: var(--accent-glow);
+  box-shadow: 0 0 0 1px var(--accent-glow) inset;
 }
 
 .locker-item__icon {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   flex-shrink: 0;
   border-radius: var(--radius-md);
   display: flex;

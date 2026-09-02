@@ -1,0 +1,54 @@
+name: Release
+
+# Builds and publishes Linux (AppImage/deb) and Windows (nsis) builds to a
+# GitHub Release whenever a version tag is pushed. Each platform builds on
+# its own native runner rather than cross-compiling — the standard,
+# electron-builder-recommended pattern. The Windows job is unsigned for now
+# (no code-signing certificate configured), so its .exe will trigger a
+# SmartScreen warning on first run until that's set up separately.
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            dist-script: dist:linux
+          - os: windows-latest
+            dist-script: dist:win
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.24.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - uses: actions/setup-dotnet@v4
+        if: matrix.os == 'windows-latest'
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Build the Windows media-control helper
+        if: matrix.os == 'windows-latest'
+        run: dotnet publish windows-helper -c Release
+
+      - name: Build and publish
+        run: pnpm --filter launcher run ${{ matrix.dist-script }} -- --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

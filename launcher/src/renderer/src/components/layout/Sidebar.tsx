@@ -1,4 +1,5 @@
 import { GalaxyLogo } from "../brand/GalaxyLogo";
+import { useEconomy } from "../../api/useEconomy";
 import { useViewStore, type AppView } from "../../state/viewStore";
 import "./Sidebar.css";
 
@@ -7,6 +8,7 @@ const NAV_ITEMS: { view: AppView; label: string; glyph: string }[] = [
   { view: "shop", label: "Shop", glyph: "$" },
   { view: "locker", label: "Spind", glyph: "▤" },
   { view: "skinEditor", label: "Skin-Editor", glyph: "◐" },
+  { view: "founders", label: "Gründer", glyph: "🪐" },
   { view: "settings", label: "Einstellungen", glyph: "⚙" }
 ];
 
@@ -15,6 +17,8 @@ export function Sidebar(): React.JSX.Element {
   const setView = useViewStore((s) => s.setView);
   const isInstancesOpen = useViewStore((s) => s.isInstancesOpen);
   const openInstances = useViewStore((s) => s.openInstances);
+  const { data: economy } = useEconomy();
+  const isOwner = economy?.rank === "owner";
 
   return (
     <nav className="sidebar">
@@ -46,6 +50,15 @@ export function Sidebar(): React.JSX.Element {
             <span className="sidebar__glyph">{item.glyph}</span>
           </button>
         ))}
+        {isOwner && (
+          <button
+            className={`sidebar__item ${currentView === "adminConsole" ? "sidebar__item--active" : ""}`}
+            onClick={() => setView("adminConsole")}
+            title="Admin-Konsole"
+          >
+            <span className="sidebar__glyph">🛡</span>
+          </button>
+        )}
       </div>
       <div className="sidebar__spacer" />
     </nav>

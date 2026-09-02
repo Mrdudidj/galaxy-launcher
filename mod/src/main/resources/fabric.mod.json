@@ -1,0 +1,34 @@
+{
+	"schemaVersion": 1,
+	"id": "galaxy-cosmetics",
+	"version": "${version}",
+	"name": "Galaxy Cosmetics",
+	"description": "Renders Galaxy Launcher shop cosmetics in-game (glow aura, hats, emotes) plus fullbright/FPS overlay.",
+	"authors": [
+		"Galaxy Launcher"
+	],
+	"contact": {
+		"homepage": "https://github.com/Mrdudidj/galaxy-launcher",
+		"sources": "https://github.com/Mrdudidj/galaxy-launcher"
+	},
+	"license": "MIT",
+	"icon": "assets/galaxy-cosmetics/icon.png",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"net.galaxylauncher.cosmetics.GalaxyCosmeticsClient"
+		]
+	},
+	"mixins": [
+		{
+			"config": "galaxy-cosmetics.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.19.3",
+		"minecraft": "~26.2",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}

@@ -1,4 +1,4 @@
-export type ShopItemCategory = "emote" | "hat" | "outfit" | "glow";
+export type ShopItemCategory = "emote" | "hat" | "outfit" | "glow" | "pet";
 
 export type Rank = "member" | "vip" | "owner";
 
@@ -14,9 +14,15 @@ export interface ShopItem {
   colorFrom: string;
   colorTo: string;
   vipOnly?: boolean;
+  /** Never purchasable — granted only (redeem code, future backend-tracked reward).
+   *  Hidden from the normal buy grid entirely, unlike vipOnly (locked-but-visible). */
+  founderOnly?: boolean;
   /** Only set for category "glow" — the exact hex colour this item unlocks for use as a
    *  skin/name glow, so the UI never has to hardcode a name-to-colour mapping. */
   glowColor?: string;
+  /** Only set for category "outfit" — file name under launcher/resources/outfits/,
+   *  applied as the active skin texture when this item is equipped. */
+  outfitSkinAsset?: string;
 }
 
 export interface InventoryEntry {

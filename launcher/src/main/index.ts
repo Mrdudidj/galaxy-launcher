@@ -1,7 +1,8 @@
-import { app, BrowserWindow, shell } from "electron";
+import { app, BrowserWindow, globalShortcut, shell } from "electron";
 import { setDefaultResultOrder } from "node:dns";
 import { join } from "node:path";
 import { registerIpcHandlers } from "./ipc/index.js";
+import { initSpotifyWidget } from "./windows/spotifyWidgetWindow.js";
 
 // Some networks (containers/sandboxes in particular) advertise IPv6 routes that
 // don't actually work, which makes dual-stack HTTP clients waste connection
@@ -51,6 +52,7 @@ function createMainWindow(): void {
 void app.whenReady().then(() => {
   registerIpcHandlers();
   createMainWindow();
+  void initSpotifyWidget();
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -63,4 +65,8 @@ app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     app.quit();
   }
+});
+
+app.on("will-quit", () => {
+  globalShortcut.unregisterAll();
 });

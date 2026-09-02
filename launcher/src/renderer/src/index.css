@@ -15,6 +15,8 @@
   --nebula-cyan: #22d3ee;
   --radius-md: 10px;
   --radius-lg: 16px;
+  --transition-fast: 150ms ease;
+  --transition-smooth: 260ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 * {
@@ -50,7 +52,12 @@ body {
     0 0,
     0 0;
   background-attachment: fixed;
-  animation: drift-nebula 45s ease-in-out infinite alternate;
+  /* background-position isn't a compositor-only property like transform, so
+     this repaints the full-viewport background on every frame it's
+     interpolating — steps() turns that into ~14 repaints over the whole 45s
+     cycle instead of ~2700 (at 60fps), invisible to the eye at this drift
+     speed but a real, measured cost cut rather than a purely cosmetic one. */
+  animation: drift-nebula 45s steps(14, jump-end) infinite alternate;
   color: var(--text-primary);
   font-family:
     "Inter",
@@ -84,8 +91,8 @@ body::before {
     rgba(245, 158, 11, 0.22) 68%,
     rgba(124, 58, 237, 0.4) 100%
   );
-  filter: blur(50px);
-  opacity: 0.45;
+  filter: blur(28px);
+  opacity: 0.38;
   transform: translateZ(0);
   will-change: transform;
   animation: galaxy-spin 220s linear infinite;
@@ -122,4 +129,58 @@ body::before {
 button {
   font-family: inherit;
   cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+/* Shared by every screen that shows the player's own equipped-glow drop
+   shadow (Home's hero preview, the Skin-Editor's live preview) — a single
+   drop-shadow stop instead of two, since drop-shadow can't be
+   compositor-only like transform/opacity, so halving the stops meaningfully
+   cuts repaint cost while it's animating. */
+@keyframes glow-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 14px var(--glow-color));
+  }
+  50% {
+    filter: drop-shadow(0 0 26px var(--glow-color));
+  }
+}
+
+/* Keyed to the active view in App.tsx so every sidebar navigation click gets
+   a soft entrance instead of a hard cut — one rule, felt everywhere. */
+@keyframes view-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.view-transition {
+  animation: view-fade-in var(--transition-smooth);
+}
+
+/* Real opt-out (OS-level "reduce motion" setting), and also the manual
+   escape hatch if the tuned-down blur/animation cost above still isn't
+   enough on weaker/integrated GPUs — the continuous ones (galaxy-spin,
+   drift-nebula) are the ones actually worth cutting; brief hover/press
+   transitions stay since they're not an ongoing cost. */
+@media (prefers-reduced-motion: reduce) {
+  body,
+  body::before,
+  .view-transition,
+  .home-view__skin-frame,
+  .skin-editor-view__preview-frame,
+  .founders-view__preview,
+  .founders-view__status--unlocked {
+    animation: none !important;
+  }
 }

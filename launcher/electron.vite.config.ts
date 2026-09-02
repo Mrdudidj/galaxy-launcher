@@ -23,7 +23,7 @@ const brokenPackageAliases = {
 // with the current rolldown-based Vite, which bundles the npm `electron` stub
 // (its Node-side binary-path resolver) in place of Electron's real built-in
 // module. Force it via rollupOptions.external as a guaranteed backstop.
-const nodeBuiltinExternal = [
+const forcedExternalDeps = [
   "electron",
   /^node:/,
   "fs",
@@ -31,7 +31,15 @@ const nodeBuiltinExternal = [
   "os",
   "child_process",
   "url",
-  "crypto"
+  "crypto",
+  // dbus-next's optional X11-selection fallback (lib/address-x11.js) does a
+  // conditional `require('x11')` that only runs if that unused fallback path
+  // is ever called (it isn't — the session bus address always comes from
+  // DBUS_SESSION_BUS_ADDRESS/getDbusAddressFromFs() here). x11 isn't
+  // installed, and letting Rolldown try to bundle/resolve it fails the build;
+  // externalizing leaves the require() call as-is, which is fine since it's
+  // never actually reached.
+  "x11"
 ];
 
 export default defineConfig({
@@ -43,7 +51,7 @@ export default defineConfig({
     build: {
       rollupOptions: {
         input: resolve(__dirname, "src/main/index.ts"),
-        external: nodeBuiltinExternal
+        external: forcedExternalDeps
       }
     }
   },
@@ -52,7 +60,7 @@ export default defineConfig({
     build: {
       rollupOptions: {
         input: resolve(__dirname, "src/preload/index.ts"),
-        external: nodeBuiltinExternal,
+        external: forcedExternalDeps,
         // Electron's sandboxed preload loader executes preload scripts through
         // its own runner (not Node's ESM loader) and only understands CJS
         // `require`/`module.exports` — it throws "Cannot use import statement

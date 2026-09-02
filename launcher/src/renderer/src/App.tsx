@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { useInvalidateEconomy } from "./api/useEconomy";
 import { AppShell } from "./components/layout/AppShell";
+import { AdminConsoleView } from "./screens/AdminConsoleView";
+import { FoundersView } from "./screens/FoundersView";
 import { HomeView } from "./screens/HomeView";
 import { LockerView } from "./screens/LockerView";
 import { LoginView } from "./screens/LoginView";
+import { NowPlayingWidget } from "./screens/NowPlayingWidget";
 import { SettingsView } from "./screens/SettingsView";
 import { ShopView } from "./screens/ShopView";
 import { SkinEditorView } from "./screens/SkinEditorView";
@@ -12,7 +15,20 @@ import { useInstancesStore } from "./state/instancesStore";
 import { useLaunchStore } from "./state/launchStore";
 import { useViewStore } from "./state/viewStore";
 
+// Static for the lifetime of this window (it's how spotifyWidgetWindow.ts
+// tells "this is the little overlay" apart from the normal app shell without
+// a second Vite entry point) — safe to read outside any hook.
+const isSpotifyWidget = new URLSearchParams(window.location.search).get("widget") === "spotify";
+
 function App(): React.JSX.Element {
+  if (isSpotifyWidget) {
+    return <NowPlayingWidget />;
+  }
+
+  return <MainApp />;
+}
+
+function MainApp(): React.JSX.Element {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const hydrateSkin = useAuthStore((s) => s.hydrateSkin);
   const trySilentLogin = useAuthStore((s) => s.trySilentLogin);
@@ -63,11 +79,15 @@ function App(): React.JSX.Element {
 
   return (
     <AppShell>
-      {currentView === "home" && <HomeView />}
-      {currentView === "settings" && <SettingsView />}
-      {currentView === "shop" && <ShopView />}
-      {currentView === "locker" && <LockerView />}
-      {currentView === "skinEditor" && <SkinEditorView />}
+      <div key={currentView} className="view-transition">
+        {currentView === "home" && <HomeView />}
+        {currentView === "settings" && <SettingsView />}
+        {currentView === "shop" && <ShopView />}
+        {currentView === "locker" && <LockerView />}
+        {currentView === "skinEditor" && <SkinEditorView />}
+        {currentView === "founders" && <FoundersView />}
+        {currentView === "adminConsole" && <AdminConsoleView />}
+      </div>
     </AppShell>
   );
 }

@@ -5,14 +5,20 @@ import type {
   CreateInstanceInput,
   DiscordRpcSettings,
   InstanceSettingsPatch,
+  ModInstallResult,
+  ModrinthSearchHit,
   ModSuggestion,
   ServerEntry,
+  SpotifySettings,
   StartInstanceDownloadInput,
+  TextureEntry,
   WizardDefaults
 } from "../shared/instance";
 import type { DownloadProgress, FabricLoaderSummary, MinecraftVersionSummary } from "../shared/minecraft";
 import type { NewsItem } from "../shared/backend";
 import type { EconomyState, Rank, ShopItem } from "../shared/economy";
+import type { ChatOutboxEntry, ModerationState, Report } from "../shared/moderation";
+import type { SpotifyPlaybackState, SpotifySearchResult } from "../shared/spotify";
 import type { SkinState } from "../shared/skin";
 import type { MinecraftSession } from "../shared/auth";
 
@@ -72,7 +78,9 @@ const galaxyApi = {
     removeDefaultMod: (filePath: string): Promise<AppSettings> =>
       ipcRenderer.invoke("settings:removeDefaultMod", filePath),
     updateDiscordRpc: (patch: Partial<DiscordRpcSettings>): Promise<AppSettings> =>
-      ipcRenderer.invoke("settings:updateDiscordRpc", patch)
+      ipcRenderer.invoke("settings:updateDiscordRpc", patch),
+    updateSpotify: (patch: Partial<Omit<SpotifySettings, "controlKey">>): Promise<AppSettings> =>
+      ipcRenderer.invoke("settings:updateSpotify", patch)
   },
 
   wizard: {
@@ -106,15 +114,60 @@ const galaxyApi = {
       ipcRenderer.invoke("economy:setEquipped", itemId, equipped),
     redeemCode: (
       code: string
-    ): Promise<{ economy: EconomyState; grantedCoins: number; grantedGlow: string | null; grantedRank: Rank | null }> =>
-      ipcRenderer.invoke("economy:redeemCode", code),
+    ): Promise<{
+      economy: EconomyState;
+      grantedCoins: number;
+      grantedGlow: string | null;
+      grantedRank: Rank | null;
+      grantedItemName: string | null;
+    }> => ipcRenderer.invoke("economy:redeemCode", code),
     setRank: (rank: Rank): Promise<EconomyState> => ipcRenderer.invoke("economy:setRank", rank)
+  },
+
+  moderation: {
+    getState: (): Promise<ModerationState> => ipcRenderer.invoke("moderation:getState"),
+    readChatOutbox: (instanceId: string): Promise<ChatOutboxEntry[]> =>
+      ipcRenderer.invoke("moderation:readChatOutbox", instanceId),
+    createReport: (messageText: string, source: "outbox" | "manual", playerName: string | null): Promise<Report> =>
+      ipcRenderer.invoke("moderation:createReport", messageText, source, playerName),
+    approveReport: (reportId: string): Promise<ModerationState> =>
+      ipcRenderer.invoke("moderation:approveReport", reportId),
+    rejectReport: (reportId: string): Promise<ModerationState> =>
+      ipcRenderer.invoke("moderation:rejectReport", reportId),
+    warnPlayer: (reason: string): Promise<ModerationState> => ipcRenderer.invoke("moderation:warnPlayer", reason),
+    grantItem: (itemId: string): Promise<ModerationState> => ipcRenderer.invoke("moderation:grantItem", itemId),
+    revokeItem: (itemId: string): Promise<ModerationState> => ipcRenderer.invoke("moderation:revokeItem", itemId),
+    adjustCoins: (amount: number, reason: string): Promise<ModerationState> =>
+      ipcRenderer.invoke("moderation:adjustCoins", amount, reason),
+    suspendAccount: (reason: string): Promise<ModerationState> =>
+      ipcRenderer.invoke("moderation:suspendAccount", reason),
+    tempBanAccount: (durationHours: number, reason: string): Promise<ModerationState> =>
+      ipcRenderer.invoke("moderation:tempBanAccount", durationHours, reason),
+    undoAuditEntry: (entryId: string): Promise<ModerationState> =>
+      ipcRenderer.invoke("moderation:undoAuditEntry", entryId)
   },
 
   skin: {
     get: (): Promise<SkinState> => ipcRenderer.invoke("skin:get"),
     save: (base64Png: string): Promise<SkinState> => ipcRenderer.invoke("skin:save", base64Png),
     setGlow: (color: string | null): Promise<SkinState> => ipcRenderer.invoke("skin:setGlow", color)
+  },
+
+  textures: {
+    list: (instanceId: string): Promise<TextureEntry[]> => ipcRenderer.invoke("textures:list", instanceId),
+    read: (instanceId: string, texturePath: string): Promise<string> =>
+      ipcRenderer.invoke("textures:read", instanceId, texturePath),
+    readBatch: (instanceId: string, texturePaths: string[]): Promise<Record<string, string>> =>
+      ipcRenderer.invoke("textures:readBatch", instanceId, texturePaths),
+    apply: (instanceId: string, texturePath: string, base64Png: string): Promise<void> =>
+      ipcRenderer.invoke("textures:apply", instanceId, texturePath, base64Png)
+  },
+
+  mods: {
+    search: (instanceId: string, query: string): Promise<ModrinthSearchHit[]> =>
+      ipcRenderer.invoke("mods:search", instanceId, query),
+    install: (instanceId: string, projectId: string): Promise<ModInstallResult> =>
+      ipcRenderer.invoke("mods:install", instanceId, projectId)
   },
 
   ai: {
@@ -132,6 +185,24 @@ const galaxyApi = {
     isConnected: (): Promise<boolean> => ipcRenderer.invoke("discord:isConnected"),
     setActivity: (details: string, state: string): Promise<void> =>
       ipcRenderer.invoke("discord:setActivity", details, state)
+  },
+
+  spotify: {
+    getPlaybackState: (): Promise<SpotifyPlaybackState> => ipcRenderer.invoke("spotify:getPlaybackState"),
+    playPause: (): Promise<void> => ipcRenderer.invoke("spotify:playPause"),
+    next: (): Promise<void> => ipcRenderer.invoke("spotify:next"),
+    previous: (): Promise<void> => ipcRenderer.invoke("spotify:previous"),
+    adjustVolume: (delta: number): Promise<void> => ipcRenderer.invoke("spotify:adjustVolume", delta),
+    playUri: (uri: string): Promise<void> => ipcRenderer.invoke("spotify:playUri", uri),
+    search: (query: string): Promise<SpotifySearchResult[]> => ipcRenderer.invoke("spotify:search", query),
+    hasClientSecret: (): Promise<boolean> => ipcRenderer.invoke("spotify:hasClientSecret"),
+    setClientSecret: (secret: string): Promise<void> => ipcRenderer.invoke("spotify:setClientSecret", secret),
+    clearClientSecret: (): Promise<void> => ipcRenderer.invoke("spotify:clearClientSecret"),
+    showWidget: (): Promise<void> => ipcRenderer.invoke("spotify:showWidget"),
+    hideWidget: (): Promise<void> => ipcRenderer.invoke("spotify:hideWidget"),
+    togglePin: (): Promise<void> => ipcRenderer.invoke("spotify:togglePin"),
+    setPinHotkey: (accelerator: string): Promise<boolean> => ipcRenderer.invoke("spotify:setPinHotkey", accelerator),
+    setControlKey: (accelerator: string): Promise<boolean> => ipcRenderer.invoke("spotify:setControlKey", accelerator)
   },
 
   auth: {

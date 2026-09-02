@@ -1,6 +1,8 @@
 import { launch, Version } from "@xmcl/core";
 import type { ChildProcess } from "node:child_process";
 import { getCurrentSession } from "../auth/microsoftAuth.js";
+import { exportCosmeticsConfig } from "../economy/cosmeticsExport.js";
+import { ensureCompanionMod } from "../instances/companionMod.js";
 import { getInstanceGameDir, getSharedDir } from "../instances/instancePaths.js";
 import { readInstance, updateInstance } from "../instances/instanceStore.js";
 import { ensureJava } from "./javaRuntime.js";
@@ -34,6 +36,11 @@ export async function launchInstance(instanceId: string, handlers: LaunchHandler
   const instance = await readInstance(instanceId);
   if (!instance.resolvedVersionId) {
     throw new Error("Diese Instanz wurde noch nicht heruntergeladen.");
+  }
+
+  if (instance.modLoader.type === "fabric") {
+    await ensureCompanionMod(instanceId);
+    await exportCosmeticsConfig(instanceId);
   }
 
   const resourcePath = getSharedDir();

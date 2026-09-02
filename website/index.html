@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Galaxy Launcher — Minecraft-Launcher mit echtem Charakter</title>
+  <meta name="description" content="Galaxy Launcher: ein Minecraft-Launcher mit echter Kosmetik, Shop, Mod-Suche, Spotify- und Discord-Integration. Kostenlos für Windows und Linux." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='49' cy='48' r='40' fill='%237c3aed'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar__inner">
+      <a class="brand" href="#top">
+        <svg class="brand__logo" width="32" height="32" viewBox="0 0 100 100" role="img" aria-label="Galaxy Launcher">
+          <defs>
+            <linearGradient id="logo-planet" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#7c3aed" />
+              <stop offset="100%" stop-color="#22d3ee" />
+            </linearGradient>
+            <linearGradient id="logo-ring" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#d946ef" />
+              <stop offset="100%" stop-color="#22d3ee" />
+            </linearGradient>
+          </defs>
+          <ellipse cx="50" cy="54" rx="43" ry="12" fill="none" stroke="url(#logo-ring)" stroke-width="4" transform="rotate(-16 50 54)" />
+          <circle cx="49" cy="48" r="25" fill="url(#logo-planet)" />
+          <circle cx="40" cy="39" r="6.5" fill="#ffffff" opacity="0.14" />
+          <circle cx="82" cy="24" r="2.2" fill="#ffffff" opacity="0.85" />
+          <circle cx="90" cy="40" r="1.4" fill="#ffffff" opacity="0.6" />
+          <circle cx="76" cy="14" r="1.4" fill="#ffffff" opacity="0.5" />
+        </svg>
+        <span>Galaxy Launcher</span>
+      </a>
+      <nav class="topbar__nav">
+        <a href="#pvp">PvP &amp; SMP</a>
+        <a href="#features">Features</a>
+        <a href="#screenshots">Screenshots</a>
+        <a href="#install">Installation</a>
+        <a href="#faq">FAQ</a>
+        <a href="https://github.com/Mrdudidj/galaxy-launcher" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero__glow" aria-hidden="true"></div>
+      <h1>Dein Minecraft-Launcher.<br />Mit echtem Charakter.</h1>
+      <p class="hero__tagline">
+        Skins, Kosmetik und Mods, die man wirklich sieht — plus Shop, Spotify- und Discord-Integration,
+        alles in einem Launcher.
+      </p>
+      <div class="hero__downloads">
+        <a class="download-button download-button--windows" href="https://github.com/Mrdudidj/galaxy-launcher/releases/latest">
+          <span class="download-button__icon" aria-hidden="true">⊞</span>
+          <span>
+            <strong>Download für Windows</strong>
+            <small>.exe · GitHub Releases</small>
+          </span>
+        </a>
+        <a class="download-button download-button--linux" href="https://github.com/Mrdudidj/galaxy-launcher/releases/latest">
+          <span class="download-button__icon" aria-hidden="true">🐧</span>
+          <span>
+            <strong>Download für Linux</strong>
+            <small>AppImage · deb</small>
+          </span>
+        </a>
+      </div>
+      <p class="hero__hint">Kostenlos. Quelloffen auf <a href="https://github.com/Mrdudidj/galaxy-launcher" target="_blank" rel="noopener">GitHub</a>.</p>
+    </section>
+
+    <section id="pvp" class="pvp reveal">
+      <div class="pvp__inner">
+        <span class="pvp__eyebrow">SMP &amp; PvP</span>
+        <h2>Gemacht für den Kampf</h2>
+        <p class="pvp__lead">
+          Nicht nur Kosmetik — Galaxy Launcher bringt die HUD-Tools mit, die auf jedem ernsthaften PvP-
+          und SMP-Server dazugehören. Alles Anzeige/Komfort, nichts, was dir einen unfairen Vorteil gibt.
+        </p>
+        <div class="pvp-grid">
+          <article class="pvp-card">
+            <span class="pvp-card__icon">⚡</span>
+            <h3>CPS-Counter</h3>
+            <p>Deine Klicks pro Sekunde live im HUD — behalte deinen Rhythmus im Kampf im Blick.</p>
+          </article>
+          <article class="pvp-card">
+            <span class="pvp-card__icon">⌨</span>
+            <h3>Tastenanzeige</h3>
+            <p>WASD und Maustasten sichtbar auf dem Bildschirm — perfekt für Practice-Sessions und Clips.</p>
+          </article>
+          <article class="pvp-card">
+            <span class="pvp-card__icon">☀</span>
+            <h3>Fullbright</h3>
+            <p>Sieh in dunklen Höhlen und beim Nether-PvP alles — ohne die Spiel-Helligkeit selbst anzufassen.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="features reveal">
+      <h2>Was Galaxy Launcher kann</h2>
+      <div class="feature-grid">
+        <article class="feature-card">
+          <span class="feature-card__icon" style="background: linear-gradient(135deg, #7c3aed, #22d3ee)">✦</span>
+          <h3>Kosmetik &amp; Skins</h3>
+          <p>Hüte, Outfits, Leuchtfarben und handanimierte Emotes — echt sichtbar an deinem Charakter, nicht nur im Menü.</p>
+        </article>
+        <article class="feature-card">
+          <span class="feature-card__icon" style="background: linear-gradient(135deg, #d946ef, #7c3aed)">$</span>
+          <h3>Shop &amp; Spind</h3>
+          <p>Sammle und rüste Kosmetik aus, mit echter Live-Vorschau deines Charakters — kein Rätselraten, wie es aussieht.</p>
+        </article>
+        <article class="feature-card">
+          <span class="feature-card__icon" style="background: linear-gradient(135deg, #22d3ee, #4ade80)">⌘</span>
+          <h3>Mod-Suche</h3>
+          <p>Mods direkt von Modrinth durchsuchen und installieren — Abhängigkeiten werden automatisch mit aufgelöst.</p>
+        </article>
+        <article class="feature-card">
+          <span class="feature-card__icon" style="background: linear-gradient(135deg, #4ade80, #22d3ee)">♪</span>
+          <h3>Spotify-Integration</h3>
+          <p>Sieh, was gerade läuft, und steuere Play/Pause/Skip direkt aus dem Launcher — per Taste, ohne das Spiel zu verlassen.</p>
+        </article>
+        <article class="feature-card">
+          <span class="feature-card__icon" style="background: linear-gradient(135deg, #5865f2, #7c3aed)">◆</span>
+          <h3>Discord-Status</h3>
+          <p>Zeigt Freunden automatisch, was du gerade spielst — aktualisiert sich mit deiner gewählten Instanz.</p>
+        </article>
+        <article class="feature-card">
+          <span class="feature-card__icon" style="background: linear-gradient(135deg, #f87171, #d946ef)">🛡</span>
+          <h3>Admin-Konsole</h3>
+          <p>KI-gestützte Chat-Prüfung, echtes Warn-/Bann-System, vollständiges Log mit Rückgängig-Funktion.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="screenshots" class="screenshots reveal">
+      <h2>Direkt aus dem Launcher</h2>
+      <div class="screenshot-grid">
+        <figure>
+          <img src="assets/screenshots/home.webp" alt="Galaxy Launcher Startbildschirm mit Instanzen" loading="lazy" width="1000" height="625" />
+          <figcaption>Start</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/screenshots/shop.webp" alt="Galaxy Launcher Shop mit Kosmetik-Artikeln" loading="lazy" width="1000" height="625" />
+          <figcaption>Shop</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/screenshots/locker.webp" alt="Galaxy Launcher Spind mit ausgerüsteter Kosmetik" loading="lazy" width="1000" height="625" />
+          <figcaption>Spind</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/screenshots/skin-editor.webp" alt="Galaxy Launcher Skin-Editor" loading="lazy" width="1000" height="625" />
+          <figcaption>Skin-Editor</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="install" class="install reveal">
+      <h2>Installation</h2>
+      <div class="install-grid">
+        <div class="install-card">
+          <h3><span aria-hidden="true">⊞</span> Windows</h3>
+          <p>Installer herunterladen und ausführen — Galaxy Launcher richtet sich selbst ein.</p>
+          <a class="download-button download-button--windows" href="https://github.com/Mrdudidj/galaxy-launcher/releases/latest">
+            <span class="download-button__icon" aria-hidden="true">⊞</span>
+            <span>
+              <strong>Installer herunterladen</strong>
+              <small>.exe · GitHub Releases</small>
+            </span>
+          </a>
+        </div>
+
+        <div class="install-card">
+          <h3><span aria-hidden="true">🐧</span> Linux</h3>
+          <p>Direkt im Terminal — die Befehle holen sich automatisch die jeweils neueste Version.</p>
+
+          <div class="install-tabs">
+            <input type="radio" name="linux-format" id="tab-appimage" checked />
+            <input type="radio" name="linux-format" id="tab-deb" />
+            <div class="install-tabs__labels">
+              <label for="tab-appimage">AppImage</label>
+              <label for="tab-deb">.deb (Ubuntu/Debian)</label>
+            </div>
+
+            <div class="install-tabs__panel" id="panel-appimage">
+              <pre><code>curl -sL $(curl -s https://api.github.com/repos/Mrdudidj/galaxy-launcher/releases/latest | grep "browser_download_url.*AppImage" | cut -d '"' -f 4) -o GalaxyLauncher.AppImage
+chmod +x GalaxyLauncher.AppImage
+./GalaxyLauncher.AppImage</code></pre>
+              <button class="copy-button" type="button" data-copy-target="panel-appimage">Kopieren</button>
+            </div>
+
+            <div class="install-tabs__panel" id="panel-deb">
+              <pre><code>curl -sL $(curl -s https://api.github.com/repos/Mrdudidj/galaxy-launcher/releases/latest | grep "browser_download_url.*deb" | cut -d '"' -f 4) -o galaxy-launcher.deb
+sudo dpkg -i galaxy-launcher.deb</code></pre>
+              <button class="copy-button" type="button" data-copy-target="panel-deb">Kopieren</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq" class="faq reveal">
+      <h2>Häufige Fragen</h2>
+      <div class="faq-list">
+        <details class="faq-item">
+          <summary>Kostet Galaxy Launcher etwas?</summary>
+          <p>Nein. Komplett kostenlos und quelloffen — keine Bezahlfunktionen auf dieser Webseite.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Welche Betriebssysteme werden unterstützt?</summary>
+          <p>Windows und Linux, jeweils mit einem eigenen echten Installationsweg (siehe oben).</p>
+        </details>
+        <details class="faq-item">
+          <summary>Brauche ich einen Microsoft-Account?</summary>
+          <p>Zum Spielen ja, wie bei jedem anderen Minecraft-Launcher — das Anmelden ist der einzige Account, den Galaxy Launcher braucht.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Wo melde ich Bugs oder Ideen?</summary>
+          <p>Direkt im <a href="https://github.com/Mrdudidj/galaxy-launcher" target="_blank" rel="noopener">GitHub-Repository</a> — Issues und Pull Requests sind willkommen.</p>
+        </details>
+      </div>
+    </section>
+
+    <section id="requirements" class="requirements reveal">
+      <h2>Systemanforderungen</h2>
+      <p class="requirements__hint">
+        Galaxy Launcher selbst ist bewusst schlank gehalten — die eigentliche Anforderung kommt von
+        Minecraft: Java Edition selbst.
+      </p>
+      <div class="requirements-grid">
+        <div class="requirements-card">
+          <h3>Minimum</h3>
+          <ul>
+            <li>Windows 10/11 oder eine aktuelle Linux-Distribution</li>
+            <li>4 GB RAM</li>
+            <li>Grafikkarte mit OpenGL-4.x-Unterstützung</li>
+          </ul>
+        </div>
+        <div class="requirements-card">
+          <h3>Empfohlen</h3>
+          <ul>
+            <li>8 GB RAM oder mehr</li>
+            <li>Dedizierte Grafikkarte</li>
+            <li>SSD für schnelle Instanz-Downloads</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta reveal">
+      <h2>Bereit zum Start?</h2>
+      <div class="hero__downloads">
+        <a class="download-button download-button--windows" href="https://github.com/Mrdudidj/galaxy-launcher/releases/latest">
+          <span class="download-button__icon" aria-hidden="true">⊞</span>
+          <span>
+            <strong>Download für Windows</strong>
+            <small>.exe · GitHub Releases</small>
+          </span>
+        </a>
+        <a class="download-button download-button--linux" href="https://github.com/Mrdudidj/galaxy-launcher/releases/latest">
+          <span class="download-button__icon" aria-hidden="true">🐧</span>
+          <span>
+            <strong>Download für Linux</strong>
+            <small>AppImage · deb</small>
+          </span>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Galaxy Launcher — <a href="https://github.com/Mrdudidj/galaxy-launcher" target="_blank" rel="noopener">Quellcode auf GitHub</a></p>
+    <p><a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a></p>
+  </footer>
+
+  <script>
+    // The one deliberate bit of JS on an otherwise script-free page — fades
+    // sections in as they enter view instead of the page reading as a single
+    // static document. Falls back to fully visible (see the plain .reveal
+    // rule in styles.css) if IntersectionObserver isn't available.
+    if ("IntersectionObserver" in window) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("visible");
+              observer.unobserve(entry.target);
+            }
+          }
+        },
+        { threshold: 0.15 }
+      );
+      document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
+    } else {
+      document.querySelectorAll(".reveal").forEach((el) => el.classList.add("visible"));
+    }
+
+    // Copy-to-clipboard for the install command blocks — the only other bit
+    // of JS on the page, since there's no CSS-only way to touch the clipboard.
+    document.querySelectorAll(".copy-button").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const panel = document.getElementById(button.dataset.copyTarget);
+        const text = panel.querySelector("code").innerText;
+        try {
+          await navigator.clipboard.writeText(text);
+          const original = button.textContent;
+          button.textContent = "Kopiert ✓";
+          setTimeout(() => (button.textContent = original), 1800);
+        } catch {
+          // Clipboard API can be unavailable (e.g. insecure context) — the
+          // command is still fully selectable/copyable by hand either way.
+        }
+      });
+    });
+  </script>
+</body>
+</html>

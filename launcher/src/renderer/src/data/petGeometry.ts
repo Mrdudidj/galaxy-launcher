@@ -7,8 +7,9 @@
 export interface PetDefinition {
   offset: [number, number, number];
   scale: number;
-  planetColor: string;
-  ringColor: string;
+  /** File names under assets/textures/pets/ — see textureAssets.ts. */
+  planetTexture: string;
+  ringTexture: string;
 }
 
 export const PET_GEOMETRY: Record<string, PetDefinition> = {
@@ -17,7 +18,7 @@ export const PET_GEOMETRY: Record<string, PetDefinition> = {
     // confirmed empirically, not assumed: a positive-Z guess put it in front).
     offset: [0, -14, -7],
     scale: 1.0,
-    planetColor: "#7c3aed",
-    ringColor: "#22d3ee"
+    planetTexture: "galaxy-companion-planet.png",
+    ringTexture: "galaxy-companion-ring.png"
   }
 };

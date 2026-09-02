@@ -7,12 +7,17 @@ import org.jspecify.annotations.Nullable;
 // Generic keyframe interpolator, driven entirely by EmoteKeyframes' bundled data —
 // replaces what used to be a per-emote switch of hand-tuned trig (see git history),
 // which is what let the launcher's and this mod's poses drift out of sync in the
-// first place. Linear interpolation only, matching the launcher's own interpreter
-// in emoteAnimations.ts — nothing here needs easing curves.
+// first place. Eased the same way the launcher's own interpreter in
+// emoteAnimations.ts is, so in-game playback matches the launcher preview.
 public final class EmotePoses {
 	private static final double DEG = Math.PI / 180.0;
 
 	private EmotePoses() {}
+
+	// Standard ease-in-out cubic — mirrors emoteAnimations.ts's easeInOutCubic exactly.
+	private static double easeInOutCubic(double u) {
+		return u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+	}
 
 	public static void apply(String emoteId, HumanoidModel<?> model, float progress) {
 		EmoteDefinition def = EmoteKeyframes.get(emoteId);
@@ -22,7 +27,7 @@ public final class EmotePoses {
 		EmoteDefinition.EmoteKeyframe a = bracket[0];
 		EmoteDefinition.EmoteKeyframe b = bracket[1];
 		double span = b.t() - a.t();
-		double u = span > 0 ? (progress - a.t()) / span : 0;
+		double u = span > 0 ? easeInOutCubic((progress - a.t()) / span) : 0;
 
 		applyBone(model.head, a.pose().head(), b.pose().head(), u);
 		applyBone(model.body, a.pose().body(), b.pose().body(), u);

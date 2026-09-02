@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { getInstanceGameDir } from "./instancePaths.js";
 import { readInstance, updateInstance } from "./instanceStore.js";
 
-const COMPANION_MOD_VERSION = "1.6.0";
+const COMPANION_MOD_VERSION = "1.6.1";
 const COMPANION_MOD_FILENAME = "galaxy-cosmetics.jar";
 
 async function pathExists(path: string): Promise<boolean> {

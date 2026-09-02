@@ -16,6 +16,7 @@ import {
 } from "three";
 import { HAT_GEOMETRY } from "../../data/hatGeometry";
 import { PET_GEOMETRY } from "../../data/petGeometry";
+import { loadCosmeticTexture } from "../../data/textureAssets";
 import "./SkinViewer3D.css";
 
 export function SkinViewer3D({
@@ -117,7 +118,10 @@ export function SkinViewer3D({
 
     const group = new Group();
     for (const box of boxes) {
-      const mesh = new Mesh(new BoxGeometry(...box.size), new MeshBasicMaterial({ color: box.color }));
+      const mesh = new Mesh(
+        new BoxGeometry(...box.size),
+        new MeshBasicMaterial({ map: loadCosmeticTexture(box.texture) })
+      );
       mesh.position.set(...box.center);
       group.add(mesh);
     }
@@ -145,10 +149,16 @@ export function SkinViewer3D({
     group.position.set(...def.offset);
     group.scale.setScalar(def.scale);
 
-    const planet = new Mesh(new SphereGeometry(2.2, 20, 20), new MeshBasicMaterial({ color: def.planetColor }));
+    const planet = new Mesh(
+      new SphereGeometry(2.2, 20, 20),
+      new MeshBasicMaterial({ map: loadCosmeticTexture(def.planetTexture) })
+    );
     group.add(planet);
 
-    const ring = new Mesh(new TorusGeometry(3.4, 0.35, 8, 32), new MeshBasicMaterial({ color: def.ringColor }));
+    const ring = new Mesh(
+      new TorusGeometry(3.4, 0.35, 8, 32),
+      new MeshBasicMaterial({ map: loadCosmeticTexture(def.ringTexture) })
+    );
     ring.rotation.x = Math.PI / 2.3;
     ring.rotation.z = 0.3;
     group.add(ring);

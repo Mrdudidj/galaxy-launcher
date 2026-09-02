@@ -18,12 +18,17 @@ function findBracket(keyframes: EmoteKeyframe[], t: number): [EmoteKeyframe, Emo
   return [last, last];
 }
 
-// Linear interpolation only — this codebase doesn't use easing curves anywhere
-// else either, and nothing here needs more than that.
+// Standard ease-in-out cubic — accelerates out of each keyframe and decelerates
+// into the next instead of moving at a constant rate the whole way, which is
+// what actually reads as deliberate motion rather than a robotic tween.
+function easeInOutCubic(u: number): number {
+  return u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+}
+
 function applyKeyframes(player: PlayerObject, t: number, def: EmoteDefinition): void {
   const [a, b] = findBracket(def.keyframes, t);
   const span = b.t - a.t;
-  const u = span > 0 ? (t - a.t) / span : 0;
+  const u = span > 0 ? easeInOutCubic((t - a.t) / span) : 0;
 
   for (const bone of BONES) {
     const poseA = a.pose[bone];

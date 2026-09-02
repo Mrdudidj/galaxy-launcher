@@ -8,6 +8,7 @@ import type {
   ModSuggestion,
   ServerEntry,
   StartInstanceDownloadInput,
+  TextureEntry,
   WizardDefaults
 } from "../shared/instance";
 import type { DownloadProgress, FabricLoaderSummary, MinecraftVersionSummary } from "../shared/minecraft";
@@ -115,6 +116,14 @@ const galaxyApi = {
     get: (): Promise<SkinState> => ipcRenderer.invoke("skin:get"),
     save: (base64Png: string): Promise<SkinState> => ipcRenderer.invoke("skin:save", base64Png),
     setGlow: (color: string | null): Promise<SkinState> => ipcRenderer.invoke("skin:setGlow", color)
+  },
+
+  textures: {
+    list: (instanceId: string): Promise<TextureEntry[]> => ipcRenderer.invoke("textures:list", instanceId),
+    read: (instanceId: string, texturePath: string): Promise<string> =>
+      ipcRenderer.invoke("textures:read", instanceId, texturePath),
+    apply: (instanceId: string, texturePath: string, base64Png: string): Promise<void> =>
+      ipcRenderer.invoke("textures:apply", instanceId, texturePath, base64Png)
   },
 
   ai: {

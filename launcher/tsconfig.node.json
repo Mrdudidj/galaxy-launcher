@@ -2,7 +2,15 @@
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
-    "types": ["electron-vite/node"]
+    "types": ["electron-vite/node"],
+    // @xmcl/unzip@2.2.0 ships a broken package.json "main" (points at a
+    // nonexistent "./index.ts" instead of "./dist/index.js" per its own
+    // publishConfig) — electron.vite.config.ts already works around this for
+    // bundling via resolve.alias; tsc needs the same fix separately, since it
+    // resolves modules independently of Vite/Rollup.
+    "paths": {
+      "@xmcl/unzip": ["./node_modules/@xmcl/unzip/dist/index.d.ts"]
+    }
   },
   "include": ["src/main/**/*", "src/preload/**/*", "src/shared/**/*", "electron.vite.config.ts"]
 }

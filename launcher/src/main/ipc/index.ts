@@ -47,6 +47,7 @@ import {
   updateInstance
 } from "../services/instances/instanceStore.js";
 import { getWizardDefaults, updateWizardDefaults } from "../services/instances/wizardDefaults.js";
+import { applyCustomTexture, listTextures, readTexturePng } from "../services/textures/textureCatalog.js";
 import type { InstanceSettingsPatch, ServerEntry, WizardDefaults } from "../../shared/instance.js";
 import type { Rank } from "../../shared/economy.js";
 
@@ -108,6 +109,16 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle("instances:removeResourcePack", (_event, instanceId: string, fileName: string) =>
     removeResourcePack(instanceId, fileName)
+  );
+
+  ipcMain.handle("textures:list", (_event, instanceId: string) => listTextures(instanceId));
+
+  ipcMain.handle("textures:read", (_event, instanceId: string, texturePath: string) =>
+    readTexturePng(instanceId, texturePath)
+  );
+
+  ipcMain.handle("textures:apply", (_event, instanceId: string, texturePath: string, base64Png: string) =>
+    applyCustomTexture(instanceId, texturePath, base64Png)
   );
 
   ipcMain.handle("dialogs:addMods", async (event, instanceId: string) => {

@@ -1,14 +1,39 @@
 import { useEffect, useMemo, useState } from "react";
+import type { TextureEntry } from "../../../shared/instance";
 import { createEmptyGrid, gridToCanvas, PixelCanvas, type PixelGrid, type PixelTool } from "../components/editor/PixelCanvas";
 import { PixelToolbar } from "../components/editor/PixelToolbar";
 import { SkinViewer3D } from "../components/skin/SkinViewer3D";
-import { MINECRAFT_ITEMS, type MinecraftItemEntry } from "../data/minecraftItems";
 import { useEconomy, useShopCatalog } from "../api/useEconomy";
 import { useAuthStore } from "../state/authStore";
+import { useInstancesStore } from "../state/instancesStore";
 import "./SkinEditorView.css";
 
 const SKIN_SIZE = 64;
 const PIXEL_SIZE = 6;
+
+function hexToRgb(hex: string): [number, number, number] {
+  const clean = hex.replace("#", "");
+  return [parseInt(clean.slice(0, 2), 16), parseInt(clean.slice(2, 4), 16), parseInt(clean.slice(4, 6), 16)];
+}
+
+function rgbToHex(r: number, g: number, b: number): string {
+  const clamp = (n: number) => Math.max(0, Math.min(255, Math.round(n)));
+  return `#${[clamp(r), clamp(g), clamp(b)].map((n) => n.toString(16).padStart(2, "0")).join("")}`;
+}
+
+// intensity 0-100: 50 is the shop color unchanged, below fades toward black
+// (dim/muted), above blends toward white (bright, "hot" glow) — a paint-time
+// brightness the exported pixels actually carry, not a real light source.
+function applyGlowIntensity(baseHex: string, intensity: number): string {
+  const [r, g, b] = hexToRgb(baseHex);
+  if (intensity === 50) return baseHex;
+  if (intensity < 50) {
+    const t = (50 - intensity) / 50;
+    return rgbToHex(r * (1 - t), g * (1 - t), b * (1 - t));
+  }
+  const t = (intensity - 50) / 50;
+  return rgbToHex(r + (255 - r) * t, g + (255 - g) * t, b + (255 - b) * t);
+}
 
 const GUIDE_REGIONS: { label: string; x: number; y: number; w: number; h: number; color: string }[] = [
   { label: "Kopf", x: 8, y: 8, w: 8, h: 8, color: "#22d3ee" },
@@ -19,24 +44,24 @@ const GUIDE_REGIONS: { label: string; x: number; y: number; w: number; h: number
   { label: "Bein L", x: 20, y: 52, w: 4, h: 12, color: "#4ade80" }
 ];
 
-async function imageToGrid(url: string, size: number): Promise<PixelGrid> {
+async function imageToGrid(url: string, width: number, height: number): Promise<PixelGrid> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement("canvas");
-      canvas.width = size;
-      canvas.height = size;
+      canvas.width = width;
+      canvas.height = height;
       const ctx = canvas.getContext("2d");
       if (!ctx) {
         reject(new Error("Kein 2D-Kontext verfügbar."));
         return;
       }
-      ctx.drawImage(img, 0, 0, size, size);
-      const { data } = ctx.getImageData(0, 0, size, size);
-      const grid = createEmptyGrid(size, size);
-      for (let y = 0; y < size; y++) {
-        for (let x = 0; x < size; x++) {
-          const i = (y * size + x) * 4;
+      ctx.drawImage(img, 0, 0, width, height);
+      const { data } = ctx.getImageData(0, 0, width, height);
+      const grid = createEmptyGrid(width, height);
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const i = (y * width + x) * 4;
           const alpha = data[i + 3] ?? 0;
           if (alpha === 0) continue;
           const r = (data[i] ?? 0).toString(16).padStart(2, "0");
@@ -47,7 +72,19 @@ async function imageToGrid(url: string, size: number): Promise<PixelGrid> {
       }
       resolve(grid);
     };
-    img.onerror = () => reject(new Error("Skin konnte nicht geladen werden."));
+    img.onerror = () => reject(new Error("Bild konnte nicht geladen werden."));
+    img.src = url;
+  });
+}
+
+// Real textures load at their own natural size (a 16×16 item vs. a much
+// larger GUI sprite sheet) rather than through imageToGrid's canvas-scaling
+// path, which is meant for a known target size like the 64×64 skin.
+async function loadImageNaturalSize(url: string): Promise<{ width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
+    img.onerror = () => reject(new Error("Bild konnte nicht geladen werden."));
     img.src = url;
   });
 }
@@ -69,7 +106,7 @@ function SkinMode(): React.JSX.Element {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    void imageToGrid(skinUrl, SKIN_SIZE)
+    void imageToGrid(skinUrl, SKIN_SIZE, SKIN_SIZE)
       .then(setGrid)
       .catch(() => setGrid(createEmptyGrid(SKIN_SIZE, SKIN_SIZE)))
       .finally(() => setIsLoaded(true));
@@ -199,65 +236,207 @@ function SkinMode(): React.JSX.Element {
   );
 }
 
-const TEXTURE_SIZES = [16, 32, 64] as const;
+const MAX_LISTED_RESULTS = 300;
+
+function textureCanvasPixelSize(width: number): number {
+  if (width <= 16) return 20;
+  if (width <= 32) return 10;
+  if (width <= 64) return 6;
+  if (width <= 128) return 3;
+  return 1;
+}
 
 function TextureMode(): React.JSX.Element {
-  const [selectedItem, setSelectedItem] = useState<MinecraftItemEntry | null>(null);
-  const [size, setSize] = useState<(typeof TEXTURE_SIZES)[number]>(16);
+  const { data: catalog } = useShopCatalog();
+  const { data: economy } = useEconomy();
+  const ownedGlowItems = useMemo(() => {
+    if (!catalog || !economy) return [];
+    const ownedIds = new Set(economy.inventory.map((i) => i.itemId));
+    return catalog.filter((item) => item.category === "glow" && ownedIds.has(item.id));
+  }, [catalog, economy]);
+
+  const instances = useInstancesStore((s) => s.instances);
+  const storeSelectedId = useInstancesStore((s) => s.selectedInstanceId);
+
+  const downloadedInstances = useMemo(() => instances.filter((i) => i.resolvedVersionId !== null), [instances]);
+  const [instanceId, setInstanceId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (instanceId) return;
+    const preferred = downloadedInstances.find((i) => i.id === storeSelectedId) ?? downloadedInstances[0];
+    if (preferred) setInstanceId(preferred.id);
+    // Only meant to pick an initial default once instances are known.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [downloadedInstances]);
+
+  const [textures, setTextures] = useState<TextureEntry[] | null>(null);
+  const [isLoadingList, setIsLoadingList] = useState(false);
+  const [listError, setListError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!instanceId) return;
+    setTextures(null);
+    setListError(null);
+    setIsLoadingList(true);
+    window.galaxy.textures
+      .list(instanceId)
+      .then(setTextures)
+      .catch((error: unknown) => setListError(error instanceof Error ? error.message : "Texturen konnten nicht geladen werden."))
+      .finally(() => setIsLoadingList(false));
+  }, [instanceId]);
+
+  const [category, setCategory] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [selected, setSelected] = useState<TextureEntry | null>(null);
   const [grid, setGrid] = useState<PixelGrid>(() => createEmptyGrid(16, 16));
+  const [dims, setDims] = useState({ width: 16, height: 16 });
   const [tool, setTool] = useState<PixelTool>("brush");
   const [color, setColor] = useState("#8b5cf6");
-  const [exportMessage, setExportMessage] = useState<string | null>(null);
+  const [activeGlowColor, setActiveGlowColor] = useState<string | null>(null);
+  const [glowIntensity, setGlowIntensity] = useState(50);
+  const [isLoadingTexture, setIsLoadingTexture] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
-  const grouped = useMemo(() => {
-    const map = new Map<string, MinecraftItemEntry[]>();
-    for (const item of MINECRAFT_ITEMS) {
-      const list = map.get(item.category) ?? [];
-      list.push(item);
-      map.set(item.category, list);
+  useEffect(() => {
+    if (activeGlowColor) setColor(applyGlowIntensity(activeGlowColor, glowIntensity));
+  }, [activeGlowColor, glowIntensity]);
+
+  const categoryCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const t of textures ?? []) counts.set(t.category, (counts.get(t.category) ?? 0) + 1);
+    return [...counts.entries()].sort(([a], [b]) => a.localeCompare(b));
+  }, [textures]);
+
+  const visibleResults = useMemo(() => {
+    if (!textures) return [];
+    const query = search.trim().toLowerCase();
+    const base = query ? textures.filter((t) => t.path.toLowerCase().includes(query)) : category ? textures.filter((t) => t.category === category) : [];
+    return base.slice(0, MAX_LISTED_RESULTS);
+  }, [textures, search, category]);
+
+  const totalMatching = useMemo(() => {
+    if (!textures) return 0;
+    const query = search.trim().toLowerCase();
+    if (query) return textures.filter((t) => t.path.toLowerCase().includes(query)).length;
+    if (category) return textures.filter((t) => t.category === category).length;
+    return 0;
+  }, [textures, search, category]);
+
+  async function handleSelectTexture(entry: TextureEntry): Promise<void> {
+    if (!instanceId) return;
+    setIsLoadingTexture(true);
+    setSaveMessage(null);
+    try {
+      const base64 = await window.galaxy.textures.read(instanceId, entry.path);
+      const url = `data:image/png;base64,${base64}`;
+      const { width, height } = await loadImageNaturalSize(url);
+      const nextGrid = await imageToGrid(url, width, height);
+      setDims({ width, height });
+      setGrid(nextGrid);
+      setSelected(entry);
+    } catch (error) {
+      setListError(error instanceof Error ? error.message : "Textur konnte nicht geladen werden.");
+    } finally {
+      setIsLoadingTexture(false);
     }
-    return [...map.entries()];
-  }, []);
-
-  function handleSelectItem(item: MinecraftItemEntry): void {
-    setSelectedItem(item);
-    setGrid(createEmptyGrid(size, size));
-    setExportMessage(null);
   }
 
-  function handleSizeChange(nextSize: (typeof TEXTURE_SIZES)[number]): void {
-    setSize(nextSize);
-    setGrid(createEmptyGrid(nextSize, nextSize));
-    setExportMessage(null);
-  }
-
-  async function handleExport(): Promise<void> {
-    if (!selectedItem) return;
-    const canvas = gridToCanvas(grid, size, size);
+  async function handleApply(): Promise<void> {
+    if (!instanceId || !selected) return;
+    const canvas = gridToCanvas(grid, dims.width, dims.height);
     const base64 = canvas.toDataURL("image/png").split(",")[1] ?? "";
-    const path = await window.galaxy.dialogs.saveTexture(`${selectedItem.id}.png`, base64);
-    setExportMessage(path ? `Gespeichert: ${path}` : null);
+    await window.galaxy.textures.apply(instanceId, selected.path, base64);
+    setSaveMessage("In der Instanz gespeichert — im Spiel unter Resourcenpakete \"galaxy-custom\" aktivieren.");
   }
 
-  if (!selectedItem) {
+  async function handleExportFile(): Promise<void> {
+    if (!selected) return;
+    const canvas = gridToCanvas(grid, dims.width, dims.height);
+    const base64 = canvas.toDataURL("image/png").split(",")[1] ?? "";
+    const path = await window.galaxy.dialogs.saveTexture(`${selected.fileName}.png`, base64);
+    if (path) setSaveMessage(`Als Datei gespeichert: ${path}`);
+  }
+
+  if (downloadedInstances.length === 0) {
+    return (
+      <p className="skin-editor-view__hint">
+        Lade zuerst eine Instanz herunter (Instanzen-Ansicht) — Texturen werden aus ihren echten Spieldateien gelesen.
+      </p>
+    );
+  }
+
+  if (!selected) {
     return (
       <div className="skin-editor-view__texture-picker">
-        <p className="skin-editor-view__hint">
-          Wähle ein Item oder einen Block aus, um seine Textur zu bearbeiten.
-        </p>
-        {grouped.map(([category, items]) => (
-          <div key={category} className="skin-editor-view__texture-category">
-            <h3>{category}</h3>
-            <div className="skin-editor-view__texture-grid">
-              {items.map((item) => (
-                <button key={item.id} className="skin-editor-view__texture-item" onClick={() => handleSelectItem(item)}>
-                  <span className="skin-editor-view__texture-item-icon">{item.icon}</span>
-                  <span>{item.name}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        ))}
+        <label className="skin-editor-view__field">
+          <span>Instanz</span>
+          <select
+            value={instanceId ?? ""}
+            onChange={(e) => {
+              setInstanceId(e.target.value);
+              setCategory(null);
+              setSearch("");
+            }}
+          >
+            {downloadedInstances.map((i) => (
+              <option key={i.id} value={i.id}>
+                {i.name} ({i.minecraftVersion})
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {isLoadingList && <p className="skin-editor-view__hint">Lade Texturliste…</p>}
+        {listError && <p className="skin-editor-view__hint">{listError}</p>}
+
+        {textures && (
+          <>
+            <input
+              className="skin-editor-view__texture-search"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setCategory(null);
+              }}
+              placeholder={`Suche unter ${textures.length} Texturen (z. B. "hotbar", "diamond", "zombie")…`}
+            />
+
+            {!search.trim() && (
+              <div className="skin-editor-view__texture-grid">
+                {categoryCounts.map(([cat, count]) => (
+                  <button
+                    key={cat}
+                    className={`skin-editor-view__texture-item ${category === cat ? "skin-editor-view__texture-item--active" : ""}`}
+                    onClick={() => setCategory(cat === category ? null : cat)}
+                  >
+                    <span>{cat}</span>
+                    <span className="skin-editor-view__texture-item-count">{count}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {(search.trim() || category) && (
+              <div className="skin-editor-view__texture-results">
+                {visibleResults.map((entry) => (
+                  <button
+                    key={entry.path}
+                    className="skin-editor-view__texture-result"
+                    onClick={() => void handleSelectTexture(entry)}
+                  >
+                    {entry.path}
+                  </button>
+                ))}
+                {totalMatching > MAX_LISTED_RESULTS && (
+                  <p className="skin-editor-view__hint">
+                    {totalMatching} Treffer — zeige die ersten {MAX_LISTED_RESULTS}, Suche verfeinern für mehr.
+                  </p>
+                )}
+                {visibleResults.length === 0 && <p className="skin-editor-view__hint">Keine Treffer.</p>}
+              </div>
+            )}
+          </>
+        )}
       </div>
     );
   }
@@ -266,49 +445,93 @@ function TextureMode(): React.JSX.Element {
     <div className="skin-editor-view__layout">
       <div className="skin-editor-view__paint-column">
         <div className="skin-editor-view__texture-active">
-          <button className="skin-editor-view__texture-back" onClick={() => setSelectedItem(null)}>
+          <button
+            className="skin-editor-view__texture-back"
+            onClick={() => {
+              setSelected(null);
+              setSaveMessage(null);
+            }}
+          >
             ← Andere Textur wählen
           </button>
-          <strong>
-            {selectedItem.icon} {selectedItem.name}
-          </strong>
+          <strong>{selected.path}</strong>
+          <span className="skin-editor-view__hint">
+            {dims.width}×{dims.height}
+          </span>
         </div>
 
-        <div className="skin-editor-view__size-tabs">
-          {TEXTURE_SIZES.map((s) => (
-            <button key={s} className={size === s ? "active" : ""} onClick={() => handleSizeChange(s)}>
-              {s}×{s}
-            </button>
-          ))}
-        </div>
+        {isLoadingTexture ? (
+          <p className="skin-editor-view__hint">Lade Textur…</p>
+        ) : (
+          <>
+            <PixelToolbar
+              tool={tool}
+              onToolChange={setTool}
+              color={color}
+              onColorChange={(next) => {
+                setActiveGlowColor(null);
+                setColor(next);
+              }}
+              onClear={() => setGrid(createEmptyGrid(dims.width, dims.height))}
+            />
 
-        <PixelToolbar
-          tool={tool}
-          onToolChange={setTool}
-          color={color}
-          onColorChange={setColor}
-          onClear={() => setGrid(createEmptyGrid(size, size))}
-        />
+            <div className="skin-editor-view__glow-paint">
+              <span className="skin-editor-view__hint">Shop-Leuchtfarben</span>
+              <div className="skin-editor-view__glow-swatches">
+                {ownedGlowItems.map((item) => (
+                  <button
+                    key={item.id}
+                    className={`skin-editor-view__glow-swatch ${activeGlowColor === item.glowColor ? "skin-editor-view__glow-swatch--active" : ""}`}
+                    style={{ background: item.glowColor }}
+                    onClick={() => item.glowColor && setActiveGlowColor(item.glowColor)}
+                    title={item.name}
+                  />
+                ))}
+                {ownedGlowItems.length === 0 && (
+                  <span className="skin-editor-view__hint">Noch keine Leuchtfarbe im Besitz — im Shop erhältlich.</span>
+                )}
+              </div>
+              {activeGlowColor && (
+                <label className="skin-editor-view__glow-intensity">
+                  <span>Stärke: {glowIntensity}%</span>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    value={glowIntensity}
+                    onChange={(e) => setGlowIntensity(Number(e.target.value))}
+                  />
+                </label>
+              )}
+            </div>
 
-        <div className="skin-editor-view__canvas-wrap">
-          <PixelCanvas
-            gridWidth={size}
-            gridHeight={size}
-            pixelSize={size === 16 ? 20 : size === 32 ? 10 : 5}
-            grid={grid}
-            onChange={setGrid}
-            tool={tool}
-            color={color}
-            onEyedrop={setColor}
-          />
-        </div>
+            <div className="skin-editor-view__canvas-wrap">
+              <PixelCanvas
+                gridWidth={dims.width}
+                gridHeight={dims.height}
+                pixelSize={textureCanvasPixelSize(dims.width)}
+                grid={grid}
+                onChange={setGrid}
+                tool={tool}
+                color={color}
+                onEyedrop={(next) => {
+                  setActiveGlowColor(null);
+                  setColor(next);
+                }}
+              />
+            </div>
 
-        <div className="skin-editor-view__texture-actions">
-          <button className="skin-editor-view__save" onClick={() => void handleExport()}>
-            ⬇ Als {selectedItem.id}.png exportieren
-          </button>
-          {exportMessage && <span className="skin-editor-view__save-message">{exportMessage}</span>}
-        </div>
+            <div className="skin-editor-view__texture-actions">
+              <button className="skin-editor-view__save" onClick={() => void handleApply()}>
+                ✓ In Instanz übernehmen
+              </button>
+              <button className="skin-editor-view__texture-back" onClick={() => void handleExportFile()}>
+                Als Datei exportieren
+              </button>
+              {saveMessage && <span className="skin-editor-view__save-message">{saveMessage}</span>}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

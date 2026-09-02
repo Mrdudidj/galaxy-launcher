@@ -40,6 +40,14 @@ export interface ModSuggestion {
   reason: string;
 }
 
+export interface TextureEntry {
+  /** Path relative to assets/minecraft/textures, no extension — e.g. "gui/sprites/hud/hotbar". */
+  path: string;
+  /** First path segment (block, item, entity, gui, ...). */
+  category: string;
+  fileName: string;
+}
+
 export interface DiscordRpcSettings {
   enabled: boolean;
 }

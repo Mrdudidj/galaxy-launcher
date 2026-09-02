@@ -33,6 +33,15 @@ export async function saveCustomSkin(base64Png: string): Promise<SkinState> {
   return state;
 }
 
+// Falls back to the real account skin (same fallback authStore.ts's skinUrl
+// already applies) — used when un-equipping a Galaxy outfit.
+export async function clearActiveSkin(): Promise<SkinState> {
+  const state = await readState();
+  state.activeSkinBase64 = null;
+  await writeState(state);
+  return state;
+}
+
 export async function setGlowColor(color: string | null): Promise<SkinState> {
   const state = await readState();
   state.glowColor = color;

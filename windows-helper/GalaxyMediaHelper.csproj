@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- Windows 10 1809+ (10.0.17763.0) is the minimum SDK version that ships
+         the Windows.Media.Control (SMTC) WinRT projection this helper needs;
+         targeting 10.0.19041.0 keeps parity with the current Windows 10/11
+         baseline most users are actually on. -->
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <RootNamespace>GalaxyMediaHelper</RootNamespace>
+    <AssemblyName>GalaxyMediaHelper</AssemblyName>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Single self-contained file so the launcher can just spawn it without
+         shipping a separate .NET runtime install step for the end user. -->
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NAudio" Version="2.2.1" />
+  </ItemGroup>
+
+</Project>

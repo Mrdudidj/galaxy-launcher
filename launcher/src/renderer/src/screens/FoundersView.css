@@ -1,0 +1,115 @@
+.founders-view {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.founders-view h2 {
+  margin: 0;
+}
+
+.founders-view__hint {
+  margin: 0 0 14px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  max-width: 640px;
+  line-height: 1.5;
+}
+
+.founders-view__layout {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.founders-view__preview {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 12px;
+  background: var(--bg-panel);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  animation: founders-preview-glow 3.4s ease-in-out infinite;
+}
+
+/* The rarest cosmetic in the game deserves a bit more than a static box —
+   a slow glow pulse cycling the brand nebula colors, distinct from
+   HomeView's user-glow-color pulse since this one is a fixed rarity
+   showcase, not tied to whatever the player has equipped. */
+@keyframes founders-preview-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 24px rgba(124, 58, 237, 0.25);
+    border-color: var(--nebula-violet);
+  }
+  50% {
+    box-shadow: 0 0 36px rgba(217, 70, 239, 0.3);
+    border-color: var(--nebula-magenta);
+  }
+}
+
+.founders-view__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  background: var(--bg-panel);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.founders-view__info:hover {
+  border-color: var(--accent);
+  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.15);
+}
+
+.founders-view__status {
+  align-self: flex-start;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  background: var(--bg-panel-raised);
+  color: var(--text-secondary);
+}
+
+.founders-view__status--unlocked {
+  background: linear-gradient(135deg, var(--nebula-magenta), var(--accent) 55%, var(--nebula-cyan));
+  background-size: 200% 200%;
+  color: white;
+  animation: founders-status-shimmer 4s ease-in-out infinite;
+}
+
+@keyframes founders-status-shimmer {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.founders-view__description {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+.founders-view__note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}

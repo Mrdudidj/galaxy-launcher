@@ -19,7 +19,25 @@ const COMMANDS = {
     if (app) return console.log("already launched");
     app = await electron.launch({
       executablePath: electronBin,
-      args: ["--no-sandbox", APP_DIR],
+      // Xvfb has no real GPU, and Chromium's default GPU path fails to get a
+      // context at all under it (confirmed: canvas.getContext("webgl") was
+      // null, not just slow) — the skinview3d character preview silently
+      // fell back to a flat 2D <img> (SkinViewer3D.tsx's own
+      // .skin-viewer-fallback path) with no visible error. These three
+      // switches force Chromium onto SwiftShader's software GL implementation
+      // instead of the (absent) real GPU, which actually works under Xvfb —
+      // confirmed via canvas.getContext("webgl").getParameter(RENDERER) going
+      // from null to "WebKit WebGL", and the real 3D preview rendering
+      // correctly afterward. Without these, any screenshot involving the
+      // character preview silently shows the degraded fallback instead.
+      args: [
+        "--no-sandbox",
+        "--use-gl=angle",
+        "--use-angle=swiftshader",
+        "--enable-unsafe-swiftshader",
+        "--ignore-gpu-blocklist",
+        APP_DIR
+      ],
       env: { ...process.env, DISPLAY: process.env.DISPLAY || ":99" },
       timeout: 30_000
     });

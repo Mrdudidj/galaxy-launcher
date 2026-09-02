@@ -10,6 +10,7 @@ public final class CosmeticsRenderLayers {
 		LivingEntityRenderLayerRegistrationCallback.EVENT.register((entityType, entityRenderer, registrationHelper, context) -> {
 			if (entityRenderer instanceof AvatarRenderer<?> avatarRenderer) {
 				registrationHelper.register(new HatRenderLayer(avatarRenderer));
+				registrationHelper.register(new PetRenderLayer(avatarRenderer));
 			}
 		});
 	}

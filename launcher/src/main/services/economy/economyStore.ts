@@ -2,6 +2,7 @@ import { app } from "electron";
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { effectivePrice, type EconomyState, type Rank } from "../../../shared/economy.js";
+import { clearActiveSkin, saveCustomSkin, setGlowColor } from "../skins/skinStore.js";
 import { SHOP_CATALOG } from "./shopCatalog.js";
 
 const STARTING_COINS = 500;
@@ -23,11 +24,17 @@ const DEFAULT_STATE: StoredEconomy = {
 
 // GALAXY-VIP is a demo/testing code, same spirit as LOL12345!!! — once a real
 // backend exists, VIP should be granted through an actual purchase/subscription
-// flow tied to the account, not a shareable string.
-const REDEEM_CODES: Record<string, { coins?: number; nameGlow?: string; rank?: Rank }> = {
+// flow tied to the account, not a shareable string. GALAXY-FOUNDER is the same
+// kind of stand-in for the Logo-Begleiter pet: with no backend yet, there's no
+// way to actually track "the first 10 people, ever" — this grants the item
+// directly so the pet itself is real and equippable now, and swapping this for
+// real signup-order tracking later is a backend change, not a rework of the
+// pet/rendering built around it.
+const REDEEM_CODES: Record<string, { coins?: number; nameGlow?: string; rank?: Rank; grantItemId?: string }> = {
   "LOL12345!!!": { coins: 999_999 },
   STERNENSTAUB: { nameGlow: "#7c5cff" },
-  "GALAXY-VIP": { rank: "vip" }
+  "GALAXY-VIP": { rank: "vip" },
+  "GALAXY-FOUNDER": { grantItemId: "pet-galaxy-companion" }
 };
 
 function economyPath(): string {
@@ -85,6 +92,39 @@ export async function purchaseItem(itemId: string): Promise<EconomyState> {
   return toPublic(state);
 }
 
+// Galaxy-managed outfit textures live under the app's own resources dir (same
+// pattern companionMod.ts uses for the cosmetics jar) rather than the
+// renderer's bundled assets — the renderer never needs the raw file, only the
+// main process does, to fold it into skinStore's activeSkinBase64.
+function outfitAssetPath(fileName: string): string {
+  return join(__dirname, "../../resources/outfits", fileName);
+}
+
+// Equipping a hat needs no store-side effect — the renderer already derives
+// the equipped hat id from inventory, same as it already does for emotes.
+// Glow and outfits need one, since nothing else currently applies them: glow
+// via the existing skin:setGlow mechanism, outfits by reusing the exact same
+// activeSkinBase64 slot a hand-painted Skin-Editor skin uses (there's only one
+// slot; equipping an outfit overwrites a hand-painted skin the same way
+// painting a new one over an equipped outfit would — no separate history is
+// kept for either today).
+async function applyEquipEffect(item: (typeof SHOP_CATALOG)[number]): Promise<void> {
+  if (item.category === "glow" && item.glowColor) {
+    await setGlowColor(item.glowColor);
+  } else if (item.category === "outfit" && item.outfitSkinAsset) {
+    const buffer = await readFile(outfitAssetPath(item.outfitSkinAsset));
+    await saveCustomSkin(buffer.toString("base64"));
+  }
+}
+
+async function applyUnequipEffect(item: (typeof SHOP_CATALOG)[number]): Promise<void> {
+  if (item.category === "glow") {
+    await setGlowColor(null);
+  } else if (item.category === "outfit") {
+    await clearActiveSkin();
+  }
+}
+
 export async function setEquipped(itemId: string, equipped: boolean): Promise<EconomyState> {
   const item = SHOP_CATALOG.find((i) => i.id === itemId);
   if (!item) throw new Error(`Unbekannter Artikel: ${itemId}`);
@@ -102,12 +142,55 @@ export async function setEquipped(itemId: string, equipped: boolean): Promise<Ec
   }
   owned.equipped = equipped;
   await writeState(state);
+
+  if (equipped) {
+    await applyEquipEffect(item);
+  } else {
+    await applyUnequipEffect(item);
+  }
+
   return toPublic(state);
 }
 
-export async function redeemCode(
-  code: string
-): Promise<{ economy: EconomyState; grantedCoins: number; grantedGlow: string | null; grantedRank: Rank | null }> {
+// Admin-console primitives — unlike purchaseItem, these never charge coins or
+// check vipOnly/ownership; they exist so moderationStore.ts can apply an
+// admin's decision directly. Each mutation is intentionally as small and
+// single-purpose as the rest of this file's exports, so moderationStore can
+// snapshot "before" state itself (via getEconomy()) and build a real,
+// reversible audit entry around the call — this file doesn't need to know
+// anything about moderation/audit concerns.
+export async function adminGrantItem(itemId: string): Promise<EconomyState> {
+  const item = SHOP_CATALOG.find((i) => i.id === itemId);
+  if (!item) throw new Error(`Unbekannter Artikel: ${itemId}`);
+  const state = await readState();
+  if (!state.inventory.some((i) => i.itemId === itemId)) {
+    state.inventory.push({ itemId, equipped: false });
+    await writeState(state);
+  }
+  return toPublic(state);
+}
+
+export async function adminRevokeItem(itemId: string): Promise<EconomyState> {
+  const state = await readState();
+  state.inventory = state.inventory.filter((i) => i.itemId !== itemId);
+  await writeState(state);
+  return toPublic(state);
+}
+
+export async function adminAdjustCoins(delta: number): Promise<EconomyState> {
+  const state = await readState();
+  state.coins = Math.max(0, state.coins + delta);
+  await writeState(state);
+  return toPublic(state);
+}
+
+export async function redeemCode(code: string): Promise<{
+  economy: EconomyState;
+  grantedCoins: number;
+  grantedGlow: string | null;
+  grantedRank: Rank | null;
+  grantedItemName: string | null;
+}> {
   const state = await readState();
   if (state.redeemedCodes.includes(code)) {
     throw new Error("Dieser Code wurde bereits eingelöst.");
@@ -120,12 +203,18 @@ export async function redeemCode(
   state.coins += reward.coins ?? 0;
   if (reward.nameGlow) state.nameGlowColor = reward.nameGlow;
   if (reward.rank) state.rank = reward.rank;
+  let grantedItem = null;
+  if (reward.grantItemId && !state.inventory.some((i) => i.itemId === reward.grantItemId)) {
+    grantedItem = SHOP_CATALOG.find((i) => i.id === reward.grantItemId) ?? null;
+    state.inventory.push({ itemId: reward.grantItemId, equipped: false });
+  }
   state.redeemedCodes.push(code);
   await writeState(state);
   return {
     economy: toPublic(state),
     grantedCoins: reward.coins ?? 0,
     grantedGlow: reward.nameGlow ?? null,
-    grantedRank: reward.rank ?? null
+    grantedRank: reward.rank ?? null,
+    grantedItemName: grantedItem?.name ?? null
   };
 }

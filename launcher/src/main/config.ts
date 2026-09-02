@@ -22,3 +22,8 @@ export function getDiscordClientId(): string | null {
   ensureEnvLoaded();
   return process.env["DISCORD_CLIENT_ID"] || null;
 }
+
+export function getSpotifyClientId(): string | null {
+  ensureEnvLoaded();
+  return process.env["SPOTIFY_CLIENT_ID"] || null;
+}

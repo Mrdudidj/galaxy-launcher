@@ -307,20 +307,32 @@ function TextureMode(): React.JSX.Element {
     return [...counts.entries()].sort(([a], [b]) => a.localeCompare(b));
   }, [textures]);
 
-  const visibleResults = useMemo(() => {
+  const matchingResults = useMemo(() => {
     if (!textures) return [];
     const query = search.trim().toLowerCase();
-    const base = query ? textures.filter((t) => t.path.toLowerCase().includes(query)) : category ? textures.filter((t) => t.category === category) : [];
-    return base.slice(0, MAX_LISTED_RESULTS);
+    if (query) return textures.filter((t) => t.path.toLowerCase().includes(query));
+    if (category) return textures.filter((t) => t.category === category);
+    return [];
   }, [textures, search, category]);
 
-  const totalMatching = useMemo(() => {
-    if (!textures) return 0;
-    const query = search.trim().toLowerCase();
-    if (query) return textures.filter((t) => t.path.toLowerCase().includes(query)).length;
-    if (category) return textures.filter((t) => t.category === category).length;
-    return 0;
-  }, [textures, search, category]);
+  const visibleResults = useMemo(() => matchingResults.slice(0, MAX_LISTED_RESULTS), [matchingResults]);
+  const totalMatching = matchingResults.length;
+
+  const [thumbnails, setThumbnails] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (!instanceId || visibleResults.length === 0) return;
+    const missing = visibleResults.map((t) => t.path).filter((path) => !(path in thumbnails));
+    if (missing.length === 0) return;
+    window.galaxy.textures
+      .readBatch(instanceId, missing)
+      .then((batch) => setThumbnails((prev) => ({ ...prev, ...batch })))
+      .catch(() => {
+        // Missing thumbnails just fall back to the path label — not worth surfacing as an error.
+      });
+    // Only the path set matters here, not thumbnails itself (that would refetch forever).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [instanceId, visibleResults]);
 
   async function handleSelectTexture(entry: TextureEntry): Promise<void> {
     if (!instanceId) return;
@@ -424,6 +436,11 @@ function TextureMode(): React.JSX.Element {
                     className="skin-editor-view__texture-result"
                     onClick={() => void handleSelectTexture(entry)}
                   >
+                    <span className="skin-editor-view__texture-result-thumb">
+                      {thumbnails[entry.path] && (
+                        <img src={`data:image/png;base64,${thumbnails[entry.path]}`} alt="" />
+                      )}
+                    </span>
                     {entry.path}
                   </button>
                 ))}

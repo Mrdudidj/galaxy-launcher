@@ -1,0 +1,99 @@
+{
+  "emote-star-wave": {
+    "keyframes": [
+      { "t": 0.0, "pose": { "rightArm": [-150, 0, 0] } },
+      { "t": 0.25, "pose": { "rightArm": [-150, 0, -25] } },
+      { "t": 0.5, "pose": { "rightArm": [-150, 0, 0] } },
+      { "t": 0.75, "pose": { "rightArm": [-150, 0, 25] } },
+      { "t": 1.0, "pose": { "rightArm": [-150, 0, 0] } }
+    ]
+  },
+  "emote-galaxy-dance": {
+    "keyframes": [
+      { "t": 0.0, "pose": { "leftArm": [0, 0, -20], "rightArm": [0, 0, 20], "leftLeg": [15, 0, 0], "rightLeg": [-15, 0, 0] } },
+      { "t": 0.5, "pose": { "leftArm": [0, 0, 20], "rightArm": [0, 0, -20], "leftLeg": [-15, 0, 0], "rightLeg": [15, 0, 0] } },
+      { "t": 1.0, "pose": { "leftArm": [0, 0, -20], "rightArm": [0, 0, 20], "leftLeg": [15, 0, 0], "rightLeg": [-15, 0, 0] } }
+    ]
+  },
+  "emote-nova-cheer": {
+    "keyframes": [
+      { "t": 0.0, "pose": { "leftArm": [0, 0, -10], "rightArm": [0, 0, 10] } },
+      { "t": 0.3, "pose": { "leftArm": [-160, 0, -35], "rightArm": [-160, 0, 35] } },
+      { "t": 0.5, "pose": { "leftArm": [-150, 0, -35], "rightArm": [-150, 0, 35] } },
+      { "t": 0.7, "pose": { "leftArm": [-160, 0, -35], "rightArm": [-160, 0, 35] } },
+      { "t": 1.0, "pose": { "leftArm": [0, 0, -10], "rightArm": [0, 0, 10] } }
+    ]
+  },
+  "emote-zero-g-flip": {
+    "keyframes": [
+      { "t": 0.0, "pose": { "rightArm": [-30, 0, 10], "leftArm": [-30, 0, -10] } },
+      { "t": 0.5, "pose": { "rightArm": [-210, 0, 10], "leftArm": [-210, 0, -10] } },
+      { "t": 1.0, "pose": { "rightArm": [-390, 0, 10], "leftArm": [-390, 0, -10] } }
+    ]
+  },
+  "emote-vip-supernova": {
+    "keyframes": [
+      { "t": 0.0, "pose": { "leftArm": [-10, 0, -5], "rightArm": [-10, 0, 5], "head": [-5, 0, 0] } },
+      { "t": 0.4, "pose": { "leftArm": [-175, 0, -15], "rightArm": [-175, 0, 15], "head": [-15, 0, 0] } },
+      { "t": 0.6, "pose": { "leftArm": [-175, 0, -15], "rightArm": [-175, 0, 15], "head": [-15, 0, 0] } },
+      { "t": 1.0, "pose": { "leftArm": [-10, 0, -5], "rightArm": [-10, 0, 5], "head": [-5, 0, 0] } }
+    ]
+  },
+  "emote-star-mockery": {
+    "keyframes": [
+      { "t": 0.0, "pose": { "rightArm": [-90, 0, 15], "head": [10, 15, 0] } },
+      { "t": 0.25, "pose": { "rightArm": [-100, 0, 10], "head": [15, -15, 0] } },
+      { "t": 0.5, "pose": { "rightArm": [-90, 0, 15], "head": [10, 15, 0] } },
+      { "t": 0.75, "pose": { "rightArm": [-100, 0, 10], "head": [15, -15, 0] } },
+      { "t": 1.0, "pose": { "rightArm": [-90, 0, 15], "head": [10, 15, 0] } }
+    ]
+  },
+  "emote-cold-shoulder": {
+    "keyframes": [
+      { "t": 0.0, "pose": { "rightArm": [0, 0, 10], "head": [0, 0, 0] } },
+      { "t": 0.4, "pose": { "rightArm": [-40, 0, 30], "head": [0, 40, 0] } },
+      { "t": 1.0, "pose": { "rightArm": [0, 0, 10], "head": [0, 40, 0] } }
+    ]
+  },
+  "emote-noodle-arms": {
+    "keyframes": [
+      { "t": 0.0, "pose": { "leftArm": [10, 0, -15], "rightArm": [-10, 0, 15] } },
+      { "t": 0.15, "pose": { "leftArm": [-20, 0, 20], "rightArm": [20, 0, -20] } },
+      { "t": 0.3, "pose": { "leftArm": [10, 0, -25], "rightArm": [-10, 0, 25] } },
+      { "t": 0.45, "pose": { "leftArm": [-15, 0, 15], "rightArm": [15, 0, -15] } },
+      { "t": 0.6, "pose": { "leftArm": [10, 0, -20], "rightArm": [-10, 0, 20] } },
+      { "t": 0.75, "pose": { "leftArm": [-20, 0, 25], "rightArm": [20, 0, -25] } },
+      { "t": 1.0, "pose": { "leftArm": [10, 0, -15], "rightArm": [-10, 0, 15] } }
+    ]
+  },
+  "emote-astro-stumble": {
+    "keyframes": [
+      { "t": 0.0, "pose": { "body": [0, 0, 0], "leftLeg": [0, 0, 0], "rightLeg": [0, 0, 0] } },
+      { "t": 0.2, "pose": { "body": [15, 0, -20], "leftArm": [-60, 0, -40], "rightLeg": [-30, 0, 0] } },
+      { "t": 0.45, "pose": { "body": [25, 0, 15], "rightArm": [-80, 0, 30], "leftLeg": [-20, 0, 0] } },
+      { "t": 0.7, "pose": { "body": [5, 0, -5], "leftArm": [-30, 0, -10], "rightArm": [-30, 0, 10] } },
+      { "t": 1.0, "pose": { "body": [0, 0, 0], "leftLeg": [0, 0, 0], "rightLeg": [0, 0, 0] } }
+    ]
+  },
+  "emote-warm-greeting": {
+    "keyframes": [
+      { "t": 0.0, "pose": { "leftArm": [0, 0, -10], "rightArm": [0, 0, 10], "body": [0, 0, 0] } },
+      { "t": 0.3, "pose": { "leftArm": [-140, 0, -20], "rightArm": [-140, 0, 20], "body": [0, 0, 0] } },
+      { "t": 0.45, "pose": { "leftArm": [-140, 0, -35], "rightArm": [-140, 0, 35], "body": [0, 0, 0] } },
+      { "t": 0.6, "pose": { "leftArm": [-140, 0, -20], "rightArm": [-140, 0, 20], "body": [0, 0, 0] } },
+      { "t": 0.8, "pose": { "leftArm": [-20, 0, -10], "rightArm": [-20, 0, 10], "body": [25, 0, 0], "head": [15, 0, 0] } },
+      { "t": 1.0, "pose": { "leftArm": [0, 0, -10], "rightArm": [0, 0, 10], "body": [0, 0, 0] } }
+    ]
+  },
+  "emote-applause": {
+    "keyframes": [
+      { "t": 0.0, "pose": { "leftArm": [-90, 0, -25], "rightArm": [-90, 0, 25] } },
+      { "t": 0.15, "pose": { "leftArm": [-90, 0, -5], "rightArm": [-90, 0, 5] } },
+      { "t": 0.3, "pose": { "leftArm": [-90, 0, -25], "rightArm": [-90, 0, 25] } },
+      { "t": 0.45, "pose": { "leftArm": [-90, 0, -5], "rightArm": [-90, 0, 5] } },
+      { "t": 0.6, "pose": { "leftArm": [-90, 0, -25], "rightArm": [-90, 0, 25] } },
+      { "t": 0.75, "pose": { "leftArm": [-90, 0, -5], "rightArm": [-90, 0, 5] } },
+      { "t": 1.0, "pose": { "leftArm": [-90, 0, -25], "rightArm": [-90, 0, 25] } }
+    ]
+  }
+}

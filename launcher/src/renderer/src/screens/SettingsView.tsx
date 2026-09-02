@@ -1,7 +1,17 @@
 import { useEffect, useState } from "react";
 import { RankBadge } from "../components/economy/RankBadge";
 import { useEconomy } from "../api/useEconomy";
+import type { SpotifyControlAction } from "../../../shared/spotify";
 import "./SettingsView.css";
+
+const CONTROL_ACTION_LABELS: Record<SpotifyControlAction, string> = {
+  playPause: "Play/Pause",
+  next: "Weiter",
+  previous: "Zurück",
+  volumeUp: "Lauter",
+  volumeDown: "Leiser",
+  none: "Nichts"
+};
 
 export function SettingsView(): React.JSX.Element {
   const { data: economy } = useEconomy();
@@ -17,16 +27,41 @@ export function SettingsView(): React.JSX.Element {
   const [discordStatus, setDiscordStatus] = useState<"idle" | "connecting" | "connected" | "error">("idle");
   const [discordError, setDiscordError] = useState<string | null>(null);
 
+  const [spotifyWidgetVisible, setSpotifyWidgetVisible] = useState(false);
+  const [pinHotkeyInput, setPinHotkeyInput] = useState("Control+Shift+M");
+  const [pinHotkeyMessage, setPinHotkeyMessage] = useState<string | null>(null);
+
+  const [hasSpotifySecret, setHasSpotifySecret] = useState(false);
+  const [spotifySecretInput, setSpotifySecretInput] = useState("");
+  const [spotifySecretMessage, setSpotifySecretMessage] = useState<string | null>(null);
+
+  const [controlKeyInput, setControlKeyInput] = useState("B");
+  const [controlKeyMessage, setControlKeyMessage] = useState<string | null>(null);
+  const [pressActions, setPressActions] = useState<{
+    single: SpotifyControlAction;
+    double: SpotifyControlAction;
+    triple: SpotifyControlAction;
+  }>({ single: "playPause", double: "next", triple: "previous" });
+
+  const [launchCommandInput, setLaunchCommandInput] = useState("spotify");
+  const [launchCommandMessage, setLaunchCommandMessage] = useState<string | null>(null);
+
   useEffect(() => {
     void window.galaxy.settings.get().then((settings) => {
       setDefaultMods(settings.defaultMods);
       setDiscordEnabled(settings.discordRpc.enabled);
+      setSpotifyWidgetVisible(settings.spotify.widgetVisible);
+      setPinHotkeyInput(settings.spotify.pinHotkey);
+      setControlKeyInput(settings.spotify.controlKey);
+      setPressActions(settings.spotify.pressActions);
+      setLaunchCommandInput(settings.spotify.launchCommand);
     });
     void window.galaxy.ai.hasKey().then(setHasAiKey);
     void window.galaxy.discord.isConfigured().then(setDiscordConfigured);
     void window.galaxy.discord.isConnected().then((connected) => {
       if (connected) setDiscordStatus("connected");
     });
+    void window.galaxy.spotify.hasClientSecret().then(setHasSpotifySecret);
   }, []);
 
   async function handleSaveAiKey(): Promise<void> {
@@ -63,6 +98,56 @@ export function SettingsView(): React.JSX.Element {
       setDiscordStatus("error");
       setDiscordError(result.error ?? "Verbindung fehlgeschlagen.");
     }
+  }
+
+  async function handleSaveSpotifySecret(): Promise<void> {
+    if (!spotifySecretInput.trim()) return;
+    await window.galaxy.spotify.setClientSecret(spotifySecretInput.trim());
+    setSpotifySecretInput("");
+    setHasSpotifySecret(true);
+    setSpotifySecretMessage("Gespeichert.");
+    setTimeout(() => setSpotifySecretMessage(null), 2000);
+  }
+
+  async function handleClearSpotifySecret(): Promise<void> {
+    await window.galaxy.spotify.clearClientSecret();
+    setHasSpotifySecret(false);
+  }
+
+  async function handleSaveControlKey(): Promise<void> {
+    const ok = await window.galaxy.spotify.setControlKey(controlKeyInput.trim());
+    setControlKeyMessage(ok ? "Gespeichert." : "Diese Tastenkombination ist bereits belegt.");
+    setTimeout(() => setControlKeyMessage(null), 2500);
+  }
+
+  async function handlePressActionChange(
+    slot: "single" | "double" | "triple",
+    action: SpotifyControlAction
+  ): Promise<void> {
+    const next = { ...pressActions, [slot]: action };
+    setPressActions(next);
+    await window.galaxy.settings.updateSpotify({ pressActions: next });
+  }
+
+  async function handleSaveLaunchCommand(): Promise<void> {
+    await window.galaxy.settings.updateSpotify({ launchCommand: launchCommandInput.trim() || "spotify" });
+    setLaunchCommandMessage("Gespeichert.");
+    setTimeout(() => setLaunchCommandMessage(null), 2000);
+  }
+
+  async function handleToggleSpotifyWidget(visible: boolean): Promise<void> {
+    setSpotifyWidgetVisible(visible);
+    if (visible) {
+      await window.galaxy.spotify.showWidget();
+    } else {
+      await window.galaxy.spotify.hideWidget();
+    }
+  }
+
+  async function handleSavePinHotkey(): Promise<void> {
+    const ok = await window.galaxy.spotify.setPinHotkey(pinHotkeyInput.trim());
+    setPinHotkeyMessage(ok ? "Gespeichert." : "Diese Tastenkombination ist bereits belegt.");
+    setTimeout(() => setPinHotkeyMessage(null), 2500);
   }
 
   async function handleAdd(): Promise<void> {
@@ -171,6 +256,109 @@ export function SettingsView(): React.JSX.Element {
         ) : (
           <p className="settings-view__hint">Noch nicht eingerichtet.</p>
         )}
+      </section>
+
+      <section className="settings-view__section">
+        <h3>Spotify</h3>
+        <p className="settings-view__hint">
+          Steuert die lokal laufende Spotify-Desktop-App direkt (MPRIS/D-Bus) — dasselbe, was auch Medientasten
+          nutzen. Läuft ohne Anmeldung; braucht Spotify offen auf diesem Rechner. Ein Client-Secret (kostenlose
+          Spotify-Developer-App) wird nur für die Songsuche gebraucht.
+        </p>
+
+        <label className="settings-view__toggle">
+          <input
+            type="checkbox"
+            checked={spotifyWidgetVisible}
+            onChange={(e) => void handleToggleSpotifyWidget(e.target.checked)}
+          />
+          Fenster anzeigen
+        </label>
+
+        <div className="settings-view__inline-row">
+          <input
+            value={pinHotkeyInput}
+            onChange={(e) => setPinHotkeyInput(e.target.value)}
+            placeholder="z. B. Control+Shift+M"
+          />
+          <button className="settings-view__add-button" onClick={() => void handleSavePinHotkey()}>
+            Taste zum Fixieren/Lösen speichern
+          </button>
+        </div>
+        {pinHotkeyMessage && <span className="settings-view__saved-hint">{pinHotkeyMessage}</span>}
+
+        <h4>Steuerungstaste</h4>
+        <p className="settings-view__hint">
+          Eine Taste, mehrfach drücken für unterschiedliche Aktionen — z. B. 2× für "Weiter".
+        </p>
+        <div className="settings-view__inline-row">
+          <input value={controlKeyInput} onChange={(e) => setControlKeyInput(e.target.value)} placeholder="z. B. B" />
+          <button className="settings-view__add-button" onClick={() => void handleSaveControlKey()}>
+            Taste speichern
+          </button>
+        </div>
+        {controlKeyMessage && <span className="settings-view__saved-hint">{controlKeyMessage}</span>}
+
+        <div className="settings-view__press-actions">
+          {(["single", "double", "triple"] as const).map((slot) => (
+            <label key={slot} className="settings-view__press-action">
+              {slot === "single" ? "1×" : slot === "double" ? "2×" : "3×"}
+              <select
+                value={pressActions[slot]}
+                onChange={(e) => void handlePressActionChange(slot, e.target.value as SpotifyControlAction)}
+              >
+                {Object.entries(CONTROL_ACTION_LABELS).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ))}
+        </div>
+
+        <h4>Spotify-Client-Secret</h4>
+        <p className="settings-view__hint">Nur für die Songsuche im Fenster — aus deiner eigenen Spotify-Developer-App.</p>
+        {hasSpotifySecret ? (
+          <div className="settings-view__list-item">
+            <span className="settings-view__list-item-name">✓ Hinterlegt</span>
+            <button className="settings-view__list-remove" onClick={() => void handleClearSpotifySecret()}>
+              Entfernen
+            </button>
+          </div>
+        ) : (
+          <div className="settings-view__inline-row">
+            <input
+              type="password"
+              value={spotifySecretInput}
+              onChange={(e) => setSpotifySecretInput(e.target.value)}
+              placeholder="Client Secret…"
+            />
+            <button className="settings-view__add-button" onClick={() => void handleSaveSpotifySecret()}>
+              Speichern
+            </button>
+          </div>
+        )}
+        {spotifySecretMessage && <span className="settings-view__saved-hint">{spotifySecretMessage}</span>}
+
+        <details className="settings-view__advanced">
+          <summary>Erweitert: Startbefehl</summary>
+          <p className="settings-view__hint">
+            Wird genutzt, um Spotify automatisch zu starten, falls es beim Abspielen noch nicht läuft. Standard
+            passt für die meisten nativen Installationen — bei Flatpak/Snap ggf. anpassen.
+          </p>
+          <div className="settings-view__inline-row">
+            <input
+              value={launchCommandInput}
+              onChange={(e) => setLaunchCommandInput(e.target.value)}
+              placeholder="spotify"
+            />
+            <button className="settings-view__add-button" onClick={() => void handleSaveLaunchCommand()}>
+              Speichern
+            </button>
+          </div>
+          {launchCommandMessage && <span className="settings-view__saved-hint">{launchCommandMessage}</span>}
+        </details>
       </section>
 
       <section className="settings-view__section">

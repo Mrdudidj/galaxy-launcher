@@ -1,3 +1,5 @@
+import type { SpotifyControlAction } from "./spotify.js";
+
 export interface CreateInstanceInput {
   name: string;
   minecraftVersion: string;
@@ -25,6 +27,7 @@ export interface WizardDefaults {
 export interface AppSettings {
   defaultMods: string[];
   discordRpc: DiscordRpcSettings;
+  spotify: SpotifySettings;
 }
 
 export interface InstanceSettingsPatch {
@@ -40,6 +43,19 @@ export interface ModSuggestion {
   reason: string;
 }
 
+export interface ModrinthSearchHit {
+  projectId: string;
+  title: string;
+  description: string;
+  author: string;
+  downloads: number;
+  iconUrl: string | null;
+}
+
+export interface ModInstallResult {
+  installedFileNames: string[];
+}
+
 export interface TextureEntry {
   /** Path relative to assets/minecraft/textures, no extension — e.g. "gui/sprites/hud/hotbar". */
   path: string;
@@ -50,4 +66,22 @@ export interface TextureEntry {
 
 export interface DiscordRpcSettings {
   enabled: boolean;
+}
+
+export interface SpotifySettings {
+  /** Widget shown/hidden — separate from whether Spotify is currently running. */
+  widgetVisible: boolean;
+  /** Accelerator string (Electron format, e.g. "Control+Shift+M") for the pin/unpin toggle. */
+  pinHotkey: string;
+  widgetBounds: { x: number; y: number; width: number; height: number } | null;
+  pinned: boolean;
+  /** Single accelerator whose press-count (within a short window) selects an action below. */
+  controlKey: string;
+  pressActions: {
+    single: SpotifyControlAction;
+    double: SpotifyControlAction;
+    triple: SpotifyControlAction;
+  };
+  /** Command used to launch Spotify when playing a track while it's not running (varies by install method). */
+  launchCommand: string;
 }

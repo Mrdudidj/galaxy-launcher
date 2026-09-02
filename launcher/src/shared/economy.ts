@@ -1,6 +1,6 @@
 export type ShopItemCategory = "emote" | "hat" | "outfit" | "glow" | "pet";
 
-export type Rank = "member" | "vip" | "owner";
+export type Rank = "member" | "vip" | "admin" | "owner";
 
 export const VIP_DISCOUNT = 0.4;
 

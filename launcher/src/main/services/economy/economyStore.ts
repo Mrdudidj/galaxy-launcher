@@ -30,10 +30,18 @@ const DEFAULT_STATE: StoredEconomy = {
 // directly so the pet itself is real and equippable now, and swapping this for
 // real signup-order tracking later is a backend change, not a rework of the
 // pet/rendering built around it.
+// GALAXY-ADMIN is the "give someone admin access" mechanism: since there's no
+// backend/account system yet (see the local-only comment above), admin rank
+// can only ever apply to the install that redeems it — sharing this code with
+// someone lets THEIR OWN copy of the launcher show them the Admin-Konsole for
+// THEIR OWN local reports/economy, not yours. A real cross-install permission
+// model needs the backend; this is the same honest stand-in every other
+// rank/grant in this file already is.
 const REDEEM_CODES: Record<string, { coins?: number; nameGlow?: string; rank?: Rank; grantItemId?: string }> = {
   "LOL12345!!!": { coins: 999_999 },
   STERNENSTAUB: { nameGlow: "#7c5cff" },
   "GALAXY-VIP": { rank: "vip" },
+  "GALAXY-ADMIN": { rank: "admin" },
   "GALAXY-FOUNDER": { grantItemId: "pet-galaxy-companion" }
 };
 

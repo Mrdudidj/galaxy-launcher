@@ -14,7 +14,8 @@ const DEFAULT_SETTINGS: AppSettings = {
     controlKey: "B",
     pressActions: { single: "playPause", double: "next", triple: "previous" },
     launchCommand: "spotify"
-  }
+  },
+  screensaver: { enabled: true, idleMinutes: 5, narrationEnabled: true }
 };
 
 function settingsPath(): string {
@@ -32,7 +33,8 @@ export async function getSettings(): Promise<AppSettings> {
       ...DEFAULT_SETTINGS,
       ...parsed,
       discordRpc: { ...DEFAULT_SETTINGS.discordRpc, ...parsed.discordRpc },
-      spotify: { ...DEFAULT_SETTINGS.spotify, ...parsed.spotify }
+      spotify: { ...DEFAULT_SETTINGS.spotify, ...parsed.spotify },
+      screensaver: { ...DEFAULT_SETTINGS.screensaver, ...parsed.screensaver }
     };
   } catch {
     return DEFAULT_SETTINGS;
@@ -69,6 +71,13 @@ export async function updateDiscordRpcSettings(patch: Partial<AppSettings["disco
 export async function updateSpotifySettings(patch: Partial<AppSettings["spotify"]>): Promise<AppSettings> {
   const settings = await getSettings();
   settings.spotify = { ...settings.spotify, ...patch };
+  await writeSettings(settings);
+  return settings;
+}
+
+export async function updateScreensaverSettings(patch: Partial<AppSettings["screensaver"]>): Promise<AppSettings> {
+  const settings = await getSettings();
+  settings.screensaver = { ...settings.screensaver, ...patch };
   await writeSettings(settings);
   return settings;
 }

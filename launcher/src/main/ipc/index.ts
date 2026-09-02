@@ -28,6 +28,7 @@ import {
   suspendAccount,
   tempBanAccount,
   undoAuditEntry,
+  updateModerationSettings,
   warnPlayer
 } from "../services/moderation/moderationStore.js";
 import { createDesktopShortcut } from "../services/shortcuts/shortcutService.js";
@@ -54,6 +55,7 @@ import {
   getSettings,
   removeDefaultMod,
   updateDiscordRpcSettings,
+  updateScreensaverSettings,
   updateSpotifySettings
 } from "../services/settings/settingsStore.js";
 import {
@@ -80,6 +82,7 @@ import { getWizardDefaults, updateWizardDefaults } from "../services/instances/w
 import { applyCustomTexture, listTextures, readTexturePng, readTexturePngBatch } from "../services/textures/textureCatalog.js";
 import type { AppSettings, InstanceSettingsPatch, ServerEntry, WizardDefaults } from "../../shared/instance.js";
 import type { Rank } from "../../shared/economy.js";
+import type { ModerationSettings } from "../../shared/moderation.js";
 
 function getLaunchInstanceId(): string | null {
   const arg = process.argv.find((a) => a.startsWith("--instance="));
@@ -245,6 +248,10 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle("moderation:undoAuditEntry", (_event, entryId: string) => undoAuditEntry(entryId));
 
+  ipcMain.handle("moderation:updateSettings", (_event, patch: Partial<ModerationSettings>) =>
+    updateModerationSettings(patch)
+  );
+
   ipcMain.handle("app:getLaunchInstanceId", () => getLaunchInstanceId());
 
   ipcMain.handle("instances:createShortcut", (_event, id: string, name: string) => createDesktopShortcut(id, name));
@@ -284,6 +291,10 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(
     "settings:updateSpotify",
     (_event, patch: Partial<Omit<AppSettings["spotify"], "controlKey">>) => updateSpotifySettings(patch)
+  );
+
+  ipcMain.handle("settings:updateScreensaver", (_event, patch: Partial<AppSettings["screensaver"]>) =>
+    updateScreensaverSettings(patch)
   );
 
   ipcMain.handle("spotify:getPlaybackState", () => getPlaybackState());

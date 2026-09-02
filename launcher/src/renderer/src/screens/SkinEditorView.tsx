@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { getErrorMessage } from "../api/ipcError";
 import type { TextureEntry } from "../../../shared/instance";
 import { createEmptyGrid, gridToCanvas, PixelCanvas, type PixelGrid, type PixelTool } from "../components/editor/PixelCanvas";
 import { PixelToolbar } from "../components/editor/PixelToolbar";
@@ -281,7 +282,7 @@ function TextureMode(): React.JSX.Element {
     window.galaxy.textures
       .list(instanceId)
       .then(setTextures)
-      .catch((error: unknown) => setListError(error instanceof Error ? error.message : "Texturen konnten nicht geladen werden."))
+      .catch((error: unknown) => setListError(getErrorMessage(error, "Texturen konnten nicht geladen werden.")))
       .finally(() => setIsLoadingList(false));
   }, [instanceId]);
 
@@ -347,7 +348,7 @@ function TextureMode(): React.JSX.Element {
       setGrid(nextGrid);
       setSelected(entry);
     } catch (error) {
-      setListError(error instanceof Error ? error.message : "Textur konnte nicht geladen werden.");
+      setListError(getErrorMessage(error, "Textur konnte nicht geladen werden."));
     } finally {
       setIsLoadingTexture(false);
     }

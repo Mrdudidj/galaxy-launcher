@@ -15,6 +15,45 @@
   margin: 0;
 }
 
+.admin-console__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.admin-console__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition-fast);
+}
+
+.admin-console__stat:hover {
+  border-color: var(--accent);
+}
+
+.admin-console__stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.admin-console__stat-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.admin-console__stat--warn .admin-console__stat-value {
+  color: #fca5a5;
+}
+
 .admin-console__tabs {
   display: flex;
   gap: 6px;

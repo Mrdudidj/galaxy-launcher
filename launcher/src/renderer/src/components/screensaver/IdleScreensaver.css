@@ -1,0 +1,109 @@
+.idle-screensaver {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  background: var(--bg-void);
+  overflow: hidden;
+  cursor: default;
+  animation: idle-screensaver-fade-in var(--transition-smooth);
+}
+
+/* Static dot pattern, no per-frame repaint cost — same starfield technique
+   as the app shell's own background, just rendered once here. */
+.idle-screensaver__starfield {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1.5px 1.5px at 20% 30%, rgba(255, 255, 255, 0.8) 50%, transparent),
+    radial-gradient(1.5px 1.5px at 65% 15%, rgba(255, 255, 255, 0.6) 50%, transparent),
+    radial-gradient(1px 1px at 80% 65%, rgba(255, 255, 255, 0.7) 50%, transparent),
+    radial-gradient(1.5px 1.5px at 35% 80%, rgba(255, 255, 255, 0.5) 50%, transparent),
+    radial-gradient(1px 1px at 50% 50%, rgba(255, 255, 255, 0.6) 50%, transparent),
+    radial-gradient(1.5px 1.5px at 90% 40%, rgba(255, 255, 255, 0.5) 50%, transparent),
+    radial-gradient(1px 1px at 10% 60%, rgba(255, 255, 255, 0.4) 50%, transparent);
+  background-size: 100% 100%;
+}
+
+/* transform-only rotation — compositor-cheap, matches the perf pass done
+   elsewhere in this app (no continuous blur/background-position here). */
+.idle-screensaver__glow {
+  position: absolute;
+  width: 140vmax;
+  height: 140vmax;
+  background: conic-gradient(
+    from 0deg,
+    var(--nebula-violet),
+    var(--nebula-magenta),
+    var(--nebula-cyan),
+    var(--nebula-violet)
+  );
+  opacity: 0.12;
+  filter: blur(30px);
+  animation: idle-screensaver-spin 180s linear infinite;
+}
+
+.idle-screensaver__logo {
+  position: relative;
+  animation: idle-screensaver-pulse 3.6s ease-in-out infinite;
+  filter: drop-shadow(0 0 24px var(--accent-glow));
+}
+
+.idle-screensaver__caption {
+  position: relative;
+  max-width: 640px;
+  margin: 0;
+  padding: 0 24px;
+  text-align: center;
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+.idle-screensaver__hint {
+  position: relative;
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+@keyframes idle-screensaver-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes idle-screensaver-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes idle-screensaver-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .idle-screensaver__glow,
+  .idle-screensaver__logo {
+    animation: none;
+  }
+}

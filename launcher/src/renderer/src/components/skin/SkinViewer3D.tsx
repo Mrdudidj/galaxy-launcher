@@ -151,13 +151,13 @@ export function SkinViewer3D({
 
     const planet = new Mesh(
       new SphereGeometry(2.2, 20, 20),
-      new MeshBasicMaterial({ map: loadCosmeticTexture(def.planetTexture) })
+      new MeshBasicMaterial({ color: def.planetColor })
     );
     group.add(planet);
 
     const ring = new Mesh(
       new TorusGeometry(3.4, 0.35, 8, 32),
-      new MeshBasicMaterial({ map: loadCosmeticTexture(def.ringTexture) })
+      new MeshBasicMaterial({ color: def.ringColor })
     );
     ring.rotation.x = Math.PI / 2.3;
     ring.rotation.z = 0.3;

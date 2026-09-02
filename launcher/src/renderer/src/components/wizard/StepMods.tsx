@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Instance } from "@galaxy-launcher/shared-types";
+import { getErrorMessage } from "../../api/ipcError";
 import type { ModSuggestion } from "../../../../shared/instance";
 import "./WizardStep.css";
 
@@ -41,7 +42,7 @@ export function StepMods({
       const suggestions = await window.galaxy.ai.suggestMods(instance.minecraftVersion, addedFileNames, aiPrompt);
       setAiSuggestions(suggestions);
     } catch (error) {
-      setAiError(error instanceof Error ? error.message : "KI-Vorschlag fehlgeschlagen.");
+      setAiError(getErrorMessage(error, "KI-Vorschlag fehlgeschlagen."));
     } finally {
       setIsAsking(false);
     }

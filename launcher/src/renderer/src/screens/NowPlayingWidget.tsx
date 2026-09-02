@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { getErrorMessage } from "../api/ipcError";
 import type { SpotifyPlaybackState, SpotifySearchResult } from "../../../shared/spotify";
 import "./NowPlayingWidget.css";
 
@@ -59,7 +60,7 @@ export function NowPlayingWidget(): React.JSX.Element {
     try {
       setResults(await window.galaxy.spotify.search(trimmed));
     } catch (error) {
-      setSearchError(error instanceof Error ? error.message : "Suche fehlgeschlagen.");
+      setSearchError(getErrorMessage(error, "Suche fehlgeschlagen."));
       setResults([]);
     } finally {
       setSearching(false);

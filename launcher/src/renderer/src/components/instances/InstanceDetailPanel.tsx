@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { Instance } from "@galaxy-launcher/shared-types";
+import { getErrorMessage } from "../../api/ipcError";
 import type { ModInstallResult, ModrinthSearchHit, ModSuggestion, ServerEntry } from "../../../../shared/instance";
 import { useLaunchStore } from "../../state/launchStore";
 import { DownloadButton } from "./DownloadButton";
@@ -68,7 +69,7 @@ function ModsTab({
       const hits = await window.galaxy.mods.search(instance.id, modQuery.trim());
       setModResults(hits);
     } catch (error) {
-      setSearchError(error instanceof Error ? error.message : "Mod-Suche fehlgeschlagen.");
+      setSearchError(getErrorMessage(error, "Mod-Suche fehlgeschlagen."));
     } finally {
       setIsSearching(false);
     }
@@ -88,7 +89,7 @@ function ModsTab({
           : "Installiert."
       );
     } catch (error) {
-      setSearchError(error instanceof Error ? error.message : "Installation fehlgeschlagen.");
+      setSearchError(getErrorMessage(error, "Installation fehlgeschlagen."));
     } finally {
       setInstallingProjectId(null);
     }
@@ -105,7 +106,7 @@ function ModsTab({
       );
       setAiSuggestions(suggestions);
     } catch (error) {
-      setAiError(error instanceof Error ? error.message : "KI-Vorschlag fehlgeschlagen.");
+      setAiError(getErrorMessage(error, "KI-Vorschlag fehlgeschlagen."));
     } finally {
       setIsAsking(false);
     }

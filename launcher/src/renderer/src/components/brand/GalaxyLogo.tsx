@@ -18,14 +18,14 @@ export function GalaxyLogo({ size = 40 }: { size?: number }): React.JSX.Element 
         ry="12"
         fill="none"
         stroke="url(#galaxy-logo-ring)"
-        strokeWidth="4"
+        strokeWidth="9"
         transform="rotate(-16 50 54)"
       />
       <circle cx="49" cy="48" r="25" fill="url(#galaxy-logo-planet)" />
       <circle cx="40" cy="39" r="6.5" fill="#ffffff" opacity="0.14" />
-      <circle cx="82" cy="24" r="2.2" fill="#ffffff" opacity="0.85" />
-      <circle cx="90" cy="40" r="1.4" fill="#ffffff" opacity="0.6" />
-      <circle cx="76" cy="14" r="1.4" fill="#ffffff" opacity="0.5" />
+      <circle cx="82" cy="24" r="3.2" fill="#ffffff" opacity="0.85" />
+      <circle cx="90" cy="40" r="2.1" fill="#ffffff" opacity="0.6" />
+      <circle cx="76" cy="14" r="2.1" fill="#ffffff" opacity="0.5" />
     </svg>
   );
 }

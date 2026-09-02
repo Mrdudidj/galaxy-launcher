@@ -7,9 +7,13 @@
 export interface PetDefinition {
   offset: [number, number, number];
   scale: number;
-  /** File names under assets/textures/pets/ — see textureAssets.ts. */
-  planetTexture: string;
-  ringTexture: string;
+  // Flat colors, not a texture map: unlike the box-shaped hats (whose UVs
+  // match Minecraft's per-face pixel-art convention), this is a smooth
+  // SphereGeometry/TorusGeometry — wrapping a 16x16 hand-painted texture
+  // around a sphere pinches badly at the poles and just looks like noise.
+  // A flat gradient-ish color reads far better on curved geometry.
+  planetColor: string;
+  ringColor: string;
 }
 
 export const PET_GEOMETRY: Record<string, PetDefinition> = {
@@ -18,7 +22,7 @@ export const PET_GEOMETRY: Record<string, PetDefinition> = {
     // confirmed empirically, not assumed: a positive-Z guess put it in front).
     offset: [0, -14, -7],
     scale: 1.0,
-    planetTexture: "galaxy-companion-planet.png",
-    ringTexture: "galaxy-companion-ring.png"
+    planetColor: "#7c3aed",
+    ringColor: "#22d3ee"
   }
 };

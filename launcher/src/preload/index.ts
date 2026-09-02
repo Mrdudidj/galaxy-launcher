@@ -8,6 +8,7 @@ import type {
   ModInstallResult,
   ModrinthSearchHit,
   ModSuggestion,
+  ScreensaverSettings,
   ServerEntry,
   SpotifySettings,
   StartInstanceDownloadInput,
@@ -17,7 +18,7 @@ import type {
 import type { DownloadProgress, FabricLoaderSummary, MinecraftVersionSummary } from "../shared/minecraft";
 import type { NewsItem } from "../shared/backend";
 import type { EconomyState, Rank, ShopItem } from "../shared/economy";
-import type { ChatOutboxEntry, ModerationState, Report } from "../shared/moderation";
+import type { ChatOutboxEntry, ModerationSettings, ModerationState, Report } from "../shared/moderation";
 import type { SpotifyPlaybackState, SpotifySearchResult } from "../shared/spotify";
 import type { SkinState } from "../shared/skin";
 import type { MinecraftSession } from "../shared/auth";
@@ -80,7 +81,9 @@ const galaxyApi = {
     updateDiscordRpc: (patch: Partial<DiscordRpcSettings>): Promise<AppSettings> =>
       ipcRenderer.invoke("settings:updateDiscordRpc", patch),
     updateSpotify: (patch: Partial<Omit<SpotifySettings, "controlKey">>): Promise<AppSettings> =>
-      ipcRenderer.invoke("settings:updateSpotify", patch)
+      ipcRenderer.invoke("settings:updateSpotify", patch),
+    updateScreensaver: (patch: Partial<ScreensaverSettings>): Promise<AppSettings> =>
+      ipcRenderer.invoke("settings:updateScreensaver", patch)
   },
 
   wizard: {
@@ -144,7 +147,9 @@ const galaxyApi = {
     tempBanAccount: (durationHours: number, reason: string): Promise<ModerationState> =>
       ipcRenderer.invoke("moderation:tempBanAccount", durationHours, reason),
     undoAuditEntry: (entryId: string): Promise<ModerationState> =>
-      ipcRenderer.invoke("moderation:undoAuditEntry", entryId)
+      ipcRenderer.invoke("moderation:undoAuditEntry", entryId),
+    updateSettings: (patch: Partial<ModerationSettings>): Promise<ModerationState> =>
+      ipcRenderer.invoke("moderation:updateSettings", patch)
   },
 
   skin: {

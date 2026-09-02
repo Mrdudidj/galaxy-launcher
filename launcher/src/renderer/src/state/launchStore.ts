@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { getErrorMessage } from "../api/ipcError";
 
 export type LaunchPhase = "idle" | "starting" | "downloading-java" | "running" | "crashed" | "error";
 
@@ -49,7 +50,7 @@ export const useLaunchStore = create<LaunchState>((set, get) => ({
     try {
       await window.galaxy.launch.start(instanceId);
     } catch (error) {
-      set({ phase: "error", errorMessage: error instanceof Error ? error.message : "Start fehlgeschlagen." });
+      set({ phase: "error", errorMessage: getErrorMessage(error, "Start fehlgeschlagen.") });
     }
   },
 

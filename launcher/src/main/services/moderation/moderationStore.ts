@@ -2,22 +2,32 @@ import { app } from "electron";
 import { randomUUID } from "node:crypto";
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import type { AuditEntry, ChatOutboxEntry, ModerationState, ModerationVerdict, Report } from "../../../shared/moderation.js";
+import type {
+  AuditEntry,
+  ChatOutboxEntry,
+  ModerationSettings,
+  ModerationState,
+  ModerationVerdict,
+  Report
+} from "../../../shared/moderation.js";
 import { SHOP_CATALOG } from "../economy/shopCatalog.js";
 import { adminAdjustCoins, adminGrantItem, adminRevokeItem, getEconomy } from "../economy/economyStore.js";
 import { getInstanceGameDir } from "../instances/instancePaths.js";
 import { reviewMessage } from "./chatModerationService.js";
 
-const CHAT_BAN_HOURS = 24;
-const ESCALATED_BAN_HOURS = 24 * 7;
-const WARNINGS_BEFORE_ESCALATION = 3;
+const DEFAULT_SETTINGS: ModerationSettings = {
+  chatBanHours: 24,
+  escalatedBanHours: 24 * 7,
+  warningsBeforeEscalation: 3
+};
 
 const DEFAULT_STATE: ModerationState = {
   reports: [],
   auditLog: [],
   warningCount: 0,
   chatBanUntil: null,
-  accountStatus: null
+  accountStatus: null,
+  settings: DEFAULT_SETTINGS
 };
 
 function moderationPath(): string {
@@ -27,7 +37,10 @@ function moderationPath(): string {
 async function readState(): Promise<ModerationState> {
   try {
     const raw = await readFile(moderationPath(), "utf-8");
-    return { ...DEFAULT_STATE, ...(JSON.parse(raw) as Partial<ModerationState>) };
+    const parsed = JSON.parse(raw) as Partial<ModerationState>;
+    // Merged one level deep — a moderation.json saved before `settings`
+    // existed would otherwise lose the new ban-duration defaults to `undefined`.
+    return { ...DEFAULT_STATE, ...parsed, settings: { ...DEFAULT_SETTINGS, ...parsed.settings } };
   } catch {
     return DEFAULT_STATE;
   }
@@ -39,6 +52,13 @@ async function writeState(state: ModerationState): Promise<void> {
 
 export async function getModerationState(): Promise<ModerationState> {
   return readState();
+}
+
+export async function updateModerationSettings(patch: Partial<ModerationSettings>): Promise<ModerationState> {
+  const state = await readState();
+  state.settings = { ...state.settings, ...patch };
+  await writeState(state);
+  return state;
 }
 
 // Real captured text from an actual play session — see GalaxyChatOutbox.java —
@@ -94,7 +114,10 @@ function addAuditEntry(state: ModerationState, entry: Omit<AuditEntry, "id" | "c
 function applyWarning(state: ModerationState, description: string): void {
   const previous = { warningCount: state.warningCount, chatBanUntil: state.chatBanUntil };
   state.warningCount += 1;
-  const hours = state.warningCount >= WARNINGS_BEFORE_ESCALATION ? ESCALATED_BAN_HOURS : CHAT_BAN_HOURS;
+  const hours =
+    state.warningCount >= state.settings.warningsBeforeEscalation
+      ? state.settings.escalatedBanHours
+      : state.settings.chatBanHours;
   state.chatBanUntil = new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
   addAuditEntry(state, { type: "warn", description, previous });
 }

@@ -1,10 +1,17 @@
 import { useEffect, useState } from "react";
-import type { AuditActionType, ChatOutboxEntry } from "../../../shared/moderation";
+import type { AuditActionType, ChatOutboxEntry, ModerationSettings } from "../../../shared/moderation";
 import { useInvalidateModeration, useModeration } from "../api/useModeration";
 import { useEconomy, useInvalidateEconomy, useShopCatalog } from "../api/useEconomy";
 import "./AdminConsoleView.css";
 
-type Tab = "reports" | "players" | "log";
+type Tab = "reports" | "players" | "log" | "manage";
+
+const RANK_LABELS: Record<string, string> = {
+  member: "Mitglied",
+  vip: "VIP",
+  admin: "Admin",
+  owner: "Owner"
+};
 
 const ACTION_LABELS: Record<AuditActionType, string> = {
   warn: "Verwarnung",
@@ -23,6 +30,7 @@ function ReportsTab(): React.JSX.Element {
   const [outbox, setOutbox] = useState<ChatOutboxEntry[]>([]);
   const [manualText, setManualText] = useState("");
   const [busy, setBusy] = useState(false);
+  const [filter, setFilter] = useState("");
 
   useEffect(() => {
     void window.galaxy.instances.list().then((list) => {
@@ -62,7 +70,13 @@ function ReportsTab(): React.JSX.Element {
     invalidate();
   }
 
-  const reports = moderation?.reports ?? [];
+  const allReports = moderation?.reports ?? [];
+  const needle = filter.trim().toLowerCase();
+  const reports = needle
+    ? allReports.filter(
+        (r) => r.messageText.toLowerCase().includes(needle) || (r.playerName ?? "").toLowerCase().includes(needle)
+      )
+    : allReports;
 
   return (
     <div className="admin-console__tab-content">
@@ -113,8 +127,20 @@ function ReportsTab(): React.JSX.Element {
         </div>
       </div>
 
+      {allReports.length > 0 && (
+        <div className="admin-console__row">
+          <input
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            placeholder="Reports durchsuchen (Text oder Spielername)…"
+          />
+        </div>
+      )}
+
       <div className="admin-console__reports-list">
-        {reports.length === 0 && <p className="admin-console__hint">Keine Reports.</p>}
+        {reports.length === 0 && (
+          <p className="admin-console__hint">{needle ? "Keine Treffer." : "Keine Reports."}</p>
+        )}
         {reports.map((report) => (
           <div className={`admin-console__report admin-console__report--${report.status}`} key={report.id}>
             <div className="admin-console__report-text">"{report.messageText}"</div>
@@ -298,17 +324,30 @@ function PlayersTab(): React.JSX.Element {
 function LogTab(): React.JSX.Element {
   const { data: moderation } = useModeration();
   const invalidate = useInvalidateModeration();
+  const [filter, setFilter] = useState("");
 
   async function undo(id: string): Promise<void> {
     await window.galaxy.moderation.undoAuditEntry(id);
     invalidate();
   }
 
-  const entries = moderation?.auditLog ?? [];
+  const allEntries = moderation?.auditLog ?? [];
+  const needle = filter.trim().toLowerCase();
+  const entries = needle
+    ? allEntries.filter(
+        (e) => e.description.toLowerCase().includes(needle) || ACTION_LABELS[e.type].toLowerCase().includes(needle)
+      )
+    : allEntries;
 
   return (
     <div className="admin-console__tab-content">
-      {entries.length === 0 && <p className="admin-console__hint">Noch keine Aktionen protokolliert.</p>}
+      {allEntries.length === 0 && <p className="admin-console__hint">Noch keine Aktionen protokolliert.</p>}
+      {allEntries.length > 0 && (
+        <div className="admin-console__row">
+          <input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Log durchsuchen…" />
+        </div>
+      )}
+      {allEntries.length > 0 && entries.length === 0 && <p className="admin-console__hint">Keine Treffer.</p>}
       <div className="admin-console__log-list">
         {entries.map((entry) => (
           <div
@@ -330,6 +369,130 @@ function LogTab(): React.JSX.Element {
   );
 }
 
+function ManageTab(): React.JSX.Element {
+  const { data: economy } = useEconomy();
+  const { data: moderation } = useModeration();
+  const invalidate = useInvalidateModeration();
+  const [settings, setSettings] = useState<ModerationSettings | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (moderation?.settings) setSettings(moderation.settings);
+  }, [moderation?.settings]);
+
+  async function save(): Promise<void> {
+    if (!settings) return;
+    await window.galaxy.moderation.updateSettings(settings);
+    invalidate();
+  }
+
+  async function copyCode(): Promise<void> {
+    await navigator.clipboard.writeText("GALAXY-ADMIN");
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  const isOwner = economy?.rank === "owner";
+
+  return (
+    <div className="admin-console__tab-content">
+      <div className="admin-console__section">
+        <span className="admin-console__section-label">Dein Rang</span>
+        <p className="admin-console__hint">
+          Aktueller Rang auf diesem Gerät: <strong>{RANK_LABELS[economy?.rank ?? "member"]}</strong>
+        </p>
+      </div>
+
+      {isOwner && (
+        <div className="admin-console__section">
+          <span className="admin-console__section-label">Jemandem Admin geben</span>
+          <p className="admin-console__hint">
+            Gib die Person <strong>GALAXY-ADMIN</strong> weiter — im Shop unter „Code einlösen" bekommt sie damit auf
+            ihrem eigenen Gerät Zugriff auf diese Konsole. Wichtig: es gibt noch keinen echten Server, der Konten
+            geräteübergreifend verbindet — der Code schaltet die Konsole nur auf dem Gerät frei, auf dem er
+            eingelöst wird, mit eigenen, lokalen Reports und Log. Sobald es einen echten Server gibt, wird daraus
+            eine echte, geteilte Berechtigung.
+          </p>
+          <div className="admin-console__row">
+            <input value="GALAXY-ADMIN" readOnly />
+            <button onClick={() => void copyCode()}>{copied ? "Kopiert!" : "Kopieren"}</button>
+          </div>
+        </div>
+      )}
+
+      <div className="admin-console__section">
+        <span className="admin-console__section-label">Chat-Sperre — Dauer</span>
+        <p className="admin-console__hint">
+          Wie lange eine bestätigte Verwarnung den Galaxy-Chat sperrt, und ab wie vielen Verwarnungen die längere
+          Sperre greift.
+        </p>
+        {settings && (
+          <>
+            <div className="admin-console__row">
+              <span>Normale Sperre (Stunden)</span>
+              <input
+                type="number"
+                min={1}
+                value={settings.chatBanHours}
+                onChange={(e) => setSettings({ ...settings, chatBanHours: Number(e.target.value) })}
+              />
+            </div>
+            <div className="admin-console__row">
+              <span>Verlängerte Sperre (Stunden)</span>
+              <input
+                type="number"
+                min={1}
+                value={settings.escalatedBanHours}
+                onChange={(e) => setSettings({ ...settings, escalatedBanHours: Number(e.target.value) })}
+              />
+            </div>
+            <div className="admin-console__row">
+              <span>Verwarnungen bis Verlängerung</span>
+              <input
+                type="number"
+                min={1}
+                value={settings.warningsBeforeEscalation}
+                onChange={(e) => setSettings({ ...settings, warningsBeforeEscalation: Number(e.target.value) })}
+              />
+            </div>
+            <div className="admin-console__row">
+              <button onClick={() => void save()}>Speichern</button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function StatsBar(): React.JSX.Element {
+  const { data: moderation } = useModeration();
+  const reports = moderation?.reports ?? [];
+  const pending = reports.filter((r) => r.status === "pending_review").length;
+  const chatBanActive = moderation?.chatBanUntil && new Date(moderation.chatBanUntil) > new Date();
+
+  return (
+    <div className="admin-console__stats">
+      <div className="admin-console__stat">
+        <span className="admin-console__stat-value">{reports.length}</span>
+        <span className="admin-console__stat-label">Reports</span>
+      </div>
+      <div className="admin-console__stat">
+        <span className="admin-console__stat-value">{pending}</span>
+        <span className="admin-console__stat-label">Offen</span>
+      </div>
+      <div className="admin-console__stat">
+        <span className="admin-console__stat-value">{moderation?.warningCount ?? 0}</span>
+        <span className="admin-console__stat-label">Verwarnungen</span>
+      </div>
+      <div className={`admin-console__stat ${chatBanActive ? "admin-console__stat--warn" : ""}`}>
+        <span className="admin-console__stat-value">{chatBanActive ? "Gesperrt" : "Frei"}</span>
+        <span className="admin-console__stat-label">Chat-Status</span>
+      </div>
+    </div>
+  );
+}
+
 export function AdminConsoleView(): React.JSX.Element {
   const [tab, setTab] = useState<Tab>("reports");
 
@@ -337,6 +500,7 @@ export function AdminConsoleView(): React.JSX.Element {
     <div className="admin-console">
       <h2>Admin-Konsole</h2>
       <p className="admin-console__hint">KI-gestützte Chat-Moderation, Spieler-Verwaltung und ein Log für alles.</p>
+      <StatsBar />
       <div className="admin-console__tabs">
         <button className={tab === "reports" ? "active" : ""} onClick={() => setTab("reports")}>
           Reports
@@ -347,10 +511,14 @@ export function AdminConsoleView(): React.JSX.Element {
         <button className={tab === "log" ? "active" : ""} onClick={() => setTab("log")}>
           Log
         </button>
+        <button className={tab === "manage" ? "active" : ""} onClick={() => setTab("manage")}>
+          Verwaltung
+        </button>
       </div>
       {tab === "reports" && <ReportsTab />}
       {tab === "players" && <PlayersTab />}
       {tab === "log" && <LogTab />}
+      {tab === "manage" && <ManageTab />}
     </div>
   );
 }

@@ -18,7 +18,7 @@ export function Sidebar(): React.JSX.Element {
   const isInstancesOpen = useViewStore((s) => s.isInstancesOpen);
   const openInstances = useViewStore((s) => s.openInstances);
   const { data: economy } = useEconomy();
-  const isOwner = economy?.rank === "owner";
+  const canModerate = economy?.rank === "owner" || economy?.rank === "admin";
 
   return (
     <nav className="sidebar">
@@ -50,7 +50,7 @@ export function Sidebar(): React.JSX.Element {
             <span className="sidebar__glyph">{item.glyph}</span>
           </button>
         ))}
-        {isOwner && (
+        {canModerate && (
           <button
             className={`sidebar__item ${currentView === "adminConsole" ? "sidebar__item--active" : ""}`}
             onClick={() => setView("adminConsole")}

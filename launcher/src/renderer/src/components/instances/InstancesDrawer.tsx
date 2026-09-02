@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Instance } from "@galaxy-launcher/shared-types";
+import { getErrorMessage } from "../../api/ipcError";
 import { CreateInstanceWizard } from "../wizard/CreateInstanceWizard";
 import { useInstancesStore } from "../../state/instancesStore";
 import { useViewStore } from "../../state/viewStore";
@@ -80,7 +81,7 @@ export function InstancesDrawer(): React.JSX.Element {
       await window.galaxy.instances.createShortcut(id, name);
       setShortcutMessage(`Verknüpfung für "${name}" auf dem Desktop erstellt.`);
     } catch (error) {
-      setShortcutMessage(error instanceof Error ? error.message : "Verknüpfung fehlgeschlagen.");
+      setShortcutMessage(getErrorMessage(error, "Verknüpfung fehlgeschlagen."));
     }
     setTimeout(() => setShortcutMessage(null), 3500);
   }

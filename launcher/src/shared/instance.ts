@@ -28,6 +28,15 @@ export interface AppSettings {
   defaultMods: string[];
   discordRpc: DiscordRpcSettings;
   spotify: SpotifySettings;
+  screensaver: ScreensaverSettings;
+}
+
+export interface ScreensaverSettings {
+  enabled: boolean;
+  /** Minutes of no mouse/keyboard activity in the launcher before it kicks in. */
+  idleMinutes: number;
+  /** Whether the Minecraft-history narration is read aloud (Web Speech API) in addition to the on-screen captions. */
+  narrationEnabled: boolean;
 }
 
 export interface InstanceSettingsPatch {

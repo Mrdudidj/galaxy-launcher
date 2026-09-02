@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { getErrorMessage } from "../api/ipcError";
 import { effectivePrice, type ShopItemCategory } from "../../../shared/economy";
 import { CosmeticIcon, hasCosmeticIcon } from "../components/economy/CosmeticIcon";
 import { CoinBalance } from "../components/economy/CoinBalance";
@@ -67,7 +68,7 @@ export function ShopView(): React.JSX.Element {
       setRedeemInput("");
       invalidateEconomy();
     } catch (error) {
-      setRedeemMessage(error instanceof Error ? error.message : "Code ungültig.");
+      setRedeemMessage(getErrorMessage(error, "Code ungültig."));
     }
   }
 

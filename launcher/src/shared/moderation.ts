@@ -46,10 +46,17 @@ export interface ChatOutboxEntry {
   reported: boolean;
 }
 
+export interface ModerationSettings {
+  chatBanHours: number;
+  escalatedBanHours: number;
+  warningsBeforeEscalation: number;
+}
+
 export interface ModerationState {
   reports: Report[];
   auditLog: AuditEntry[];
   warningCount: number;
   chatBanUntil: string | null;
   accountStatus: AccountStatus | null;
+  settings: ModerationSettings;
 }

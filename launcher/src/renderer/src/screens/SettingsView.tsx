@@ -46,6 +46,10 @@ export function SettingsView(): React.JSX.Element {
   const [launchCommandInput, setLaunchCommandInput] = useState("spotify");
   const [launchCommandMessage, setLaunchCommandMessage] = useState<string | null>(null);
 
+  const [screensaverEnabled, setScreensaverEnabled] = useState(true);
+  const [screensaverIdleMinutes, setScreensaverIdleMinutes] = useState(5);
+  const [screensaverNarration, setScreensaverNarration] = useState(true);
+
   useEffect(() => {
     void window.galaxy.settings.get().then((settings) => {
       setDefaultMods(settings.defaultMods);
@@ -55,6 +59,9 @@ export function SettingsView(): React.JSX.Element {
       setControlKeyInput(settings.spotify.controlKey);
       setPressActions(settings.spotify.pressActions);
       setLaunchCommandInput(settings.spotify.launchCommand);
+      setScreensaverEnabled(settings.screensaver.enabled);
+      setScreensaverIdleMinutes(settings.screensaver.idleMinutes);
+      setScreensaverNarration(settings.screensaver.narrationEnabled);
     });
     void window.galaxy.ai.hasKey().then(setHasAiKey);
     void window.galaxy.discord.isConfigured().then(setDiscordConfigured);
@@ -76,6 +83,21 @@ export function SettingsView(): React.JSX.Element {
   async function handleClearAiKey(): Promise<void> {
     await window.galaxy.ai.clearKey();
     setHasAiKey(false);
+  }
+
+  async function handleToggleScreensaver(enabled: boolean): Promise<void> {
+    setScreensaverEnabled(enabled);
+    await window.galaxy.settings.updateScreensaver({ enabled });
+  }
+
+  async function handleScreensaverIdleMinutes(minutes: number): Promise<void> {
+    setScreensaverIdleMinutes(minutes);
+    if (minutes >= 1) await window.galaxy.settings.updateScreensaver({ idleMinutes: minutes });
+  }
+
+  async function handleToggleScreensaverNarration(enabled: boolean): Promise<void> {
+    setScreensaverNarration(enabled);
+    await window.galaxy.settings.updateScreensaver({ narrationEnabled: enabled });
   }
 
   async function handleToggleDiscord(enabled: boolean): Promise<void> {
@@ -359,6 +381,41 @@ export function SettingsView(): React.JSX.Element {
           </div>
           {launchCommandMessage && <span className="settings-view__saved-hint">{launchCommandMessage}</span>}
         </details>
+      </section>
+
+      <section className="settings-view__section">
+        <h3>Bildschirmschoner</h3>
+        <p className="settings-view__hint">
+          Statt einfach nur zu warten, zeigt der Launcher nach einer Weile Inaktivität eine kleine Animation mit
+          einer erzählten Geschichte rund um Minecraft. Jederzeit manuell aufrufbar, indem du irgendwo im Launcher
+          "MC Galaxy" tippst.
+        </p>
+        <label className="settings-view__toggle">
+          <input type="checkbox" checked={screensaverEnabled} onChange={(e) => void handleToggleScreensaver(e.target.checked)} />
+          Aktiv
+        </label>
+        {screensaverEnabled && (
+          <>
+            <div className="settings-view__inline-row">
+              <input
+                type="number"
+                min={1}
+                value={screensaverIdleMinutes}
+                onChange={(e) => void handleScreensaverIdleMinutes(Number(e.target.value))}
+                style={{ maxWidth: 80 }}
+              />
+              <span>Minuten ohne Aktivität, bevor er startet</span>
+            </div>
+            <label className="settings-view__toggle">
+              <input
+                type="checkbox"
+                checked={screensaverNarration}
+                onChange={(e) => void handleToggleScreensaverNarration(e.target.checked)}
+              />
+              Erzähler-Stimme (zusätzlich zum Text)
+            </label>
+          </>
+        )}
       </section>
 
       <section className="settings-view__section">

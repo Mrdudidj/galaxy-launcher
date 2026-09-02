@@ -4,6 +4,10 @@
   "description": "A custom launcher for Minecraft: Java Edition.",
   "author": "Galaxy Launcher",
   "homepage": "https://github.com/Mrdudidj/galaxy-launcher",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Mrdudidj/galaxy-launcher.git"
+  },
   "private": true,
   "version": "0.1.0",
   "type": "module",

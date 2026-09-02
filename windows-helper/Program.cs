@@ -107,7 +107,7 @@ static async Task ControlSession(Func<GlobalSystemMediaTransportControlsSession,
 // SMTC's thumbnail is a stream reference, not a plain URL like MPRIS's
 // mpris:artUrl — read it fully and hand it back as a data: URI so the
 // TypeScript side needs no platform-specific handling for album art.
-static async Task<string?> GetThumbnailDataUri(RandomAccessStreamReference? thumbnailRef)
+static async Task<string?> GetThumbnailDataUri(IRandomAccessStreamReference? thumbnailRef)
 {
     if (thumbnailRef == null) return null;
     using var stream = await thumbnailRef.OpenReadAsync();

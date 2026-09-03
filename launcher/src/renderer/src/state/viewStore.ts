@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-export type AppView = "home" | "settings" | "shop" | "locker" | "skinEditor" | "founders" | "adminConsole";
+export type AppView = "home" | "settings" | "shop" | "locker" | "skinEditor" | "founders" | "adminConsole" | "server";
 
 interface ViewState {
   currentView: AppView;

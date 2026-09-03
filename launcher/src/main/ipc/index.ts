@@ -14,6 +14,16 @@ import {
 } from "../services/discord/discordRpcService.js";
 import { pickFiles, pickSaveLocation } from "../services/dialogs.js";
 import { isGameRunning, killActiveGame, launchInstance } from "../services/minecraft/launchInstance.js";
+import { ensureServerJar } from "../services/server/serverJar.js";
+import {
+  acceptServerEula,
+  createServer,
+  deleteServer,
+  getServer,
+  markServerJarReady,
+  updateServerProperties
+} from "../services/server/serverStore.js";
+import { getServerNetworkInfo, isServerRunning, killServer, startServer, stopServer } from "../services/server/serverProcess.js";
 import { installMod, searchMods } from "../services/mods/modrinthService.js";
 import {
   generateAdminCode,
@@ -98,6 +108,7 @@ import { applyCustomTexture, listTextures, readTexturePng, readTexturePngBatch }
 import type { AppSettings, InstanceSettingsPatch, ServerEntry, WizardDefaults } from "../../shared/instance.js";
 import type { Rank } from "../../shared/economy.js";
 import type { ModerationSettings, SupportTicketCategory } from "../../shared/moderation.js";
+import type { ServerProperties } from "../../shared/server.js";
 
 function getLaunchInstanceId(): string | null {
   const arg = process.argv.find((a) => a.startsWith("--instance="));
@@ -412,5 +423,40 @@ export function registerIpcHandlers(): void {
       onJavaProgress: (downloaded, total) => event.sender.send("launch:javaProgress", downloaded, total),
       onExit: (info) => event.sender.send("launch:exit", info)
     })
+  );
+
+  ipcMain.handle("server:get", () => getServer());
+
+  ipcMain.handle("server:create", (_event, name: string, minecraftVersion: string) => createServer(name, minecraftVersion));
+
+  ipcMain.handle("server:acceptEula", () => acceptServerEula());
+
+  ipcMain.handle("server:updateProperties", (_event, patch: Partial<ServerProperties>) => updateServerProperties(patch));
+
+  ipcMain.handle("server:delete", () => deleteServer());
+
+  ipcMain.handle("server:isRunning", () => isServerRunning());
+
+  ipcMain.handle("server:stop", () => stopServer());
+
+  ipcMain.handle("server:kill", () => killServer());
+
+  ipcMain.handle("server:networkInfo", (_event, port: number) => getServerNetworkInfo(port));
+
+  ipcMain.handle("server:downloadJar", async (event, minecraftVersion: string) => {
+    await ensureServerJar(minecraftVersion, (downloaded, total) =>
+      event.sender.send("server:jarProgress", downloaded, total)
+    );
+    return markServerJarReady();
+  });
+
+  ipcMain.handle("server:start", (event) =>
+    startServer(
+      {
+        onLog: (line, stream) => event.sender.send("server:log", line, stream),
+        onExit: (info) => event.sender.send("server:exit", info)
+      },
+      (downloaded, total) => event.sender.send("server:javaProgress", downloaded, total)
+    )
   );
 }

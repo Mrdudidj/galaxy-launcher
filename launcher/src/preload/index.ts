@@ -30,6 +30,7 @@ import type {
 import type { SpotifyPlaybackState, SpotifySearchResult } from "../shared/spotify";
 import type { SkinState } from "../shared/skin";
 import type { MinecraftSession } from "../shared/auth";
+import type { ServerConfig, ServerNetworkInfo, ServerProperties } from "../shared/server";
 
 const galaxyApi = {
   ping: (): Promise<{ message: string; timestamp: number }> => ipcRenderer.invoke("app:ping"),
@@ -267,6 +268,43 @@ const galaxyApi = {
         callback(info);
       ipcRenderer.on("launch:exit", listener);
       return () => ipcRenderer.removeListener("launch:exit", listener);
+    }
+  },
+
+  server: {
+    get: (): Promise<ServerConfig | null> => ipcRenderer.invoke("server:get"),
+    create: (name: string, minecraftVersion: string): Promise<ServerConfig> =>
+      ipcRenderer.invoke("server:create", name, minecraftVersion),
+    acceptEula: (): Promise<ServerConfig> => ipcRenderer.invoke("server:acceptEula"),
+    updateProperties: (patch: Partial<ServerProperties>): Promise<ServerConfig> =>
+      ipcRenderer.invoke("server:updateProperties", patch),
+    delete: (): Promise<void> => ipcRenderer.invoke("server:delete"),
+    isRunning: (): Promise<boolean> => ipcRenderer.invoke("server:isRunning"),
+    stop: (): Promise<void> => ipcRenderer.invoke("server:stop"),
+    kill: (): Promise<void> => ipcRenderer.invoke("server:kill"),
+    networkInfo: (port: number): Promise<ServerNetworkInfo> => ipcRenderer.invoke("server:networkInfo", port),
+    downloadJar: (minecraftVersion: string): Promise<ServerConfig> =>
+      ipcRenderer.invoke("server:downloadJar", minecraftVersion),
+    start: (): Promise<void> => ipcRenderer.invoke("server:start"),
+    onJarProgress: (callback: (downloaded: number, total: number) => void): (() => void) => {
+      const listener = (_event: IpcRendererEvent, downloaded: number, total: number): void => callback(downloaded, total);
+      ipcRenderer.on("server:jarProgress", listener);
+      return () => ipcRenderer.removeListener("server:jarProgress", listener);
+    },
+    onJavaProgress: (callback: (downloaded: number, total: number) => void): (() => void) => {
+      const listener = (_event: IpcRendererEvent, downloaded: number, total: number): void => callback(downloaded, total);
+      ipcRenderer.on("server:javaProgress", listener);
+      return () => ipcRenderer.removeListener("server:javaProgress", listener);
+    },
+    onLog: (callback: (line: string, stream: "stdout" | "stderr") => void): (() => void) => {
+      const listener = (_event: IpcRendererEvent, line: string, stream: "stdout" | "stderr"): void => callback(line, stream);
+      ipcRenderer.on("server:log", listener);
+      return () => ipcRenderer.removeListener("server:log", listener);
+    },
+    onExit: (callback: (info: { code: number | null; crashed: boolean }) => void): (() => void) => {
+      const listener = (_event: IpcRendererEvent, info: { code: number | null; crashed: boolean }): void => callback(info);
+      ipcRenderer.on("server:exit", listener);
+      return () => ipcRenderer.removeListener("server:exit", listener);
     }
   }
 };

@@ -8,6 +8,7 @@ import { HomeView } from "./screens/HomeView";
 import { LockerView } from "./screens/LockerView";
 import { LoginView } from "./screens/LoginView";
 import { NowPlayingWidget } from "./screens/NowPlayingWidget";
+import { ServerView } from "./screens/ServerView";
 import { SettingsView } from "./screens/SettingsView";
 import { ShopView } from "./screens/ShopView";
 import { SkinEditorView } from "./screens/SkinEditorView";
@@ -106,6 +107,7 @@ function MainApp(): React.JSX.Element {
         {currentView === "shop" && <ShopView />}
         {currentView === "locker" && <LockerView />}
         {currentView === "skinEditor" && <SkinEditorView />}
+        {currentView === "server" && <ServerView />}
         {currentView === "founders" && <FoundersView />}
         {currentView === "adminConsole" && <AdminConsoleView />}
       </div>

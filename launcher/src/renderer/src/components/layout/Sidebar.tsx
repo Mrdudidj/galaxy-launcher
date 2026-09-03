@@ -8,6 +8,7 @@ const NAV_ITEMS: { view: AppView; label: string; glyph: string }[] = [
   { view: "shop", label: "Shop", glyph: "$" },
   { view: "locker", label: "Spind", glyph: "▤" },
   { view: "skinEditor", label: "Skin-Editor", glyph: "◐" },
+  { view: "server", label: "Server", glyph: "▲" },
   { view: "founders", label: "Gründer", glyph: "🪐" },
   { view: "settings", label: "Einstellungen", glyph: "⚙" }
 ];

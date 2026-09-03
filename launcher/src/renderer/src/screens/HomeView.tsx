@@ -6,14 +6,22 @@ import { useEconomy } from "../api/useEconomy";
 import { useAuthStore } from "../state/authStore";
 import { useInstancesStore } from "../state/instancesStore";
 import { useLaunchStore } from "../state/launchStore";
-import { useViewStore } from "../state/viewStore";
+import { useViewStore, type AppView } from "../state/viewStore";
 import "./HomeView.css";
+
+const QUICK_ACCESS: { view: AppView; glyph: string; label: string }[] = [
+  { view: "shop", glyph: "$", label: "Shop" },
+  { view: "locker", glyph: "▤", label: "Spind" },
+  { view: "skinEditor", glyph: "◐", label: "Skin-Editor" },
+  { view: "founders", glyph: "🪐", label: "Gründer" }
+];
 
 export function HomeView(): React.JSX.Element {
   const instances = useInstancesStore((s) => s.instances);
   const selectedInstanceId = useInstancesStore((s) => s.selectedInstanceId);
   const isInstancesOpen = useViewStore((s) => s.isInstancesOpen);
   const openInstances = useViewStore((s) => s.openInstances);
+  const setView = useViewStore((s) => s.setView);
   const playerName = useAuthStore((s) => s.playerName);
   const isDevBypass = useAuthStore((s) => s.isDevBypass);
   const skinUrl = useAuthStore((s) => s.skinUrl);
@@ -130,6 +138,17 @@ export function HomeView(): React.JSX.Element {
               </div>
             ))}
             <div ref={logEndRef} />
+          </div>
+        )}
+
+        {!isInstancesOpen && (
+          <div className="home-view__quick-access">
+            {QUICK_ACCESS.map((item) => (
+              <button key={item.view} className="home-view__quick-card" onClick={() => setView(item.view)}>
+                <span className="home-view__quick-glyph">{item.glyph}</span>
+                <span>{item.label}</span>
+              </button>
+            ))}
           </div>
         )}
       </div>

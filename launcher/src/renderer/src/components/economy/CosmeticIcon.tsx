@@ -15,7 +15,12 @@ const COMET_TAIL = "M28,52 L8,60 L26,64 Z";
 const OUTFIT_SHAPE =
   "M50,20 L62,30 L58,34 L58,80 L42,80 L42,34 L38,30 Z M30,36 L42,34 L42,46 L26,50 Z M70,36 L58,34 L58,46 L74,50 Z";
 
+const WINGS_SHAPE =
+  "M48,30 C34,26 16,32 10,48 C22,44 34,44 44,50 C34,52 24,58 18,68 C30,66 42,60 48,52 Z " +
+  "M52,30 C66,26 84,32 90,48 C78,44 66,44 56,50 C66,52 76,58 82,68 C70,66 58,60 52,52 Z";
+
 const PET_ID = "pet-galaxy-companion";
+const WINGS_ID = "wings-nova";
 
 export function CosmeticIcon({
   itemId,
@@ -30,6 +35,7 @@ export function CosmeticIcon({
   const hatShape = HAT_SHAPES[itemId];
   const isOutfit = itemId.startsWith("outfit-");
   const isPet = itemId === PET_ID;
+  const isWings = itemId === WINGS_ID;
 
   return (
     <svg width="60%" height="60%" viewBox="0 0 100 100" role="img" aria-hidden="true">
@@ -42,6 +48,7 @@ export function CosmeticIcon({
       {hatShape && <path d={hatShape} fill={`url(#${gradientId})`} />}
       {itemId === "hat-comet-helmet" && <path d={COMET_TAIL} fill={`url(#${gradientId})`} opacity={0.7} />}
       {isOutfit && <path d={OUTFIT_SHAPE} fill={`url(#${gradientId})`} />}
+      {isWings && <path d={WINGS_SHAPE} fill={`url(#${gradientId})`} />}
       {isPet && (
         <>
           <ellipse cx="50" cy="50" rx="34" ry="10" fill="none" stroke={`url(#${gradientId})`} strokeWidth="4" transform="rotate(-16 50 50)" />
@@ -55,5 +62,5 @@ export function CosmeticIcon({
 }
 
 export function hasCosmeticIcon(itemId: string): boolean {
-  return itemId in HAT_SHAPES || itemId.startsWith("outfit-") || itemId === PET_ID;
+  return itemId in HAT_SHAPES || itemId.startsWith("outfit-") || itemId === PET_ID || itemId === WINGS_ID;
 }

@@ -142,6 +142,16 @@ export const SHOP_CATALOG: ShopItem[] = [
     colorTo: "#22d3ee"
   },
   {
+    id: "wings-nova",
+    name: "Nova-Schwingen",
+    description: "Ein Paar leuchtender Flügel aus geschmolzenem Sternenlicht.",
+    category: "wings",
+    price: 450,
+    icon: "🪽",
+    colorFrom: "#fde047",
+    colorTo: "#f59e0b"
+  },
+  {
     id: "outfit-violet-suit",
     name: "Raumanzug: Violett",
     description: "Der Klassiker in kräftigem Nebel-Violett.",

@@ -29,6 +29,7 @@ export function ShopView(): React.JSX.Element {
   const equippedIds = new Set(economy?.inventory.filter((i) => i.equipped).map((i) => i.itemId) ?? []);
   const equippedHatId = catalog?.find((item) => item.category === "hat" && equippedIds.has(item.id))?.id ?? null;
   const equippedPetId = catalog?.find((item) => item.category === "pet" && equippedIds.has(item.id))?.id ?? null;
+  const equippedWingsId = catalog?.find((item) => item.category === "wings" && equippedIds.has(item.id))?.id ?? null;
 
   // Hovering an emote temporarily overrides the idle pose; otherwise the
   // preview reflects whatever's actually equipped, same as real gameplay.
@@ -96,6 +97,7 @@ export function ShopView(): React.JSX.Element {
               animation={previewAnimation}
               hatId={equippedHatId}
               petId={equippedPetId}
+              wingsId={equippedWingsId}
             />
             {previewEmoteId && <span className="shop-view__preview-label">Vorschau läuft…</span>}
           </div>

@@ -10,8 +10,9 @@ public record CosmeticsConfig(
 	@Nullable String hatId,
 	@Nullable String equippedEmoteId,
 	@Nullable String equippedPetId,
+	@Nullable String equippedWingsId,
 	// ISO-8601 instant (e.g. "2026-09-03T12:00:00Z"), or null if not chat-banned.
 	@Nullable String chatBanUntil
 ) {
-	public static final CosmeticsConfig EMPTY = new CosmeticsConfig(null, null, null, null, null);
+	public static final CosmeticsConfig EMPTY = new CosmeticsConfig(null, null, null, null, null, null);
 }

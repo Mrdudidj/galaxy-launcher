@@ -1,10 +1,23 @@
 import { useEffect, useState } from "react";
-import type { AuditActionType, ChatOutboxEntry, ModerationSettings } from "../../../shared/moderation";
+import type {
+  AuditActionType,
+  ChatOutboxEntry,
+  ChatReviewSession,
+  ModerationSettings,
+  SupportTicketCategory
+} from "../../../shared/moderation";
 import { useInvalidateModeration, useModeration } from "../api/useModeration";
 import { useEconomy, useInvalidateEconomy, useShopCatalog } from "../api/useEconomy";
+import { useAuthStore } from "../state/authStore";
 import "./AdminConsoleView.css";
 
-type Tab = "reports" | "players" | "log" | "manage";
+type Tab = "reports" | "chatReview" | "players" | "log" | "manage" | "support";
+
+const TICKET_CATEGORY_LABELS: Record<SupportTicketCategory, string> = {
+  warnAppeal: "Verwarnung war ein Fehler",
+  bug: "Bug gefunden",
+  other: "Sonstiges"
+};
 
 const RANK_LABELS: Record<string, string> = {
   member: "Mitglied",
@@ -259,6 +272,29 @@ function PlayersTab(): React.JSX.Element {
         </div>
       </div>
 
+      {moderation && Object.keys(moderation.playerRecords).length > 0 && (
+        <div className="admin-console__section">
+          <span className="admin-console__section-label">Spieler aus Chat-Prüfungen</span>
+          <p className="admin-console__hint">
+            Über die Chat-Prüfung markierte Spieler, mit ihrer jeweiligen Verwarnungs-Historie.
+          </p>
+          <div className="admin-console__log-list">
+            {Object.entries(moderation.playerRecords).map(([name, record]) => (
+              <div className="admin-console__log-entry" key={name}>
+                <div className="admin-console__log-type">{name}</div>
+                <div className="admin-console__log-description">
+                  {record.warningCount}× verwarnt
+                  {record.notifications[0] ? ` · zuletzt: "${record.notifications[0].message.slice(0, 60)}..."` : ""}
+                </div>
+                <div className="admin-console__log-time">
+                  {record.lastWarnedAt ? new Date(record.lastWarnedAt).toLocaleString("de-DE") : ""}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="admin-console__section">
         <span className="admin-console__section-label">Spind-Item</span>
         <div className="admin-console__row">
@@ -375,6 +411,10 @@ function ManageTab(): React.JSX.Element {
   const invalidate = useInvalidateModeration();
   const [settings, setSettings] = useState<ModerationSettings | null>(null);
   const [copied, setCopied] = useState(false);
+  const [durationDays, setDurationDays] = useState(7);
+  const [unlimited, setUnlimited] = useState(false);
+  const [generatedCode, setGeneratedCode] = useState<string | null>(null);
+  const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
     if (moderation?.settings) setSettings(moderation.settings);
@@ -386,8 +426,16 @@ function ManageTab(): React.JSX.Element {
     invalidate();
   }
 
+  async function generateCode(): Promise<void> {
+    setGenerating(true);
+    const code = await window.galaxy.economy.generateAdminCode(unlimited ? null : durationDays);
+    setGeneratedCode(code);
+    setGenerating(false);
+  }
+
   async function copyCode(): Promise<void> {
-    await navigator.clipboard.writeText("GALAXY-ADMIN");
+    if (!generatedCode) return;
+    await navigator.clipboard.writeText(generatedCode);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
@@ -407,16 +455,38 @@ function ManageTab(): React.JSX.Element {
         <div className="admin-console__section">
           <span className="admin-console__section-label">Jemandem Admin geben</span>
           <p className="admin-console__hint">
-            Gib die Person <strong>GALAXY-ADMIN</strong> weiter — im Shop unter „Code einlösen" bekommt sie damit auf
-            ihrem eigenen Gerät Zugriff auf diese Konsole. Wichtig: es gibt noch keinen echten Server, der Konten
-            geräteübergreifend verbindet — der Code schaltet die Konsole nur auf dem Gerät frei, auf dem er
-            eingelöst wird, mit eigenen, lokalen Reports und Log. Sobald es einen echten Server gibt, wird daraus
-            eine echte, geteilte Berechtigung.
+            Erzeugt einen einmaligen, zufälligen Code — im Shop unter „Code einlösen" bekommt die Person damit auf
+            ihrem eigenen Gerät befristet Zugriff auf diese Konsole. Nach Ablauf der gewählten Dauer fällt der Rang
+            automatisch zurück. Wichtig: es gibt noch keinen echten Server, der Konten geräteübergreifend verbindet
+            — der Code schaltet die Konsole nur auf dem Gerät frei, auf dem er eingelöst wird, mit eigenen, lokalen
+            Reports und Log. Sobald es einen echten Server gibt, wird daraus eine echte, geteilte Berechtigung.
           </p>
           <div className="admin-console__row">
-            <input value="GALAXY-ADMIN" readOnly />
-            <button onClick={() => void copyCode()}>{copied ? "Kopiert!" : "Kopieren"}</button>
+            <label className="admin-console__inline-toggle">
+              <input type="checkbox" checked={unlimited} onChange={(e) => setUnlimited(e.target.checked)} />
+              Unbegrenzt
+            </label>
+            {!unlimited && (
+              <>
+                <input
+                  type="number"
+                  min={1}
+                  value={durationDays}
+                  onChange={(e) => setDurationDays(Number(e.target.value))}
+                />
+                <span>Tage</span>
+              </>
+            )}
+            <button onClick={() => void generateCode()} disabled={generating}>
+              Code generieren
+            </button>
           </div>
+          {generatedCode && (
+            <div className="admin-console__row">
+              <input value={generatedCode} readOnly />
+              <button onClick={() => void copyCode()}>{copied ? "Kopiert!" : "Kopieren"}</button>
+            </div>
+          )}
         </div>
       )}
 
@@ -465,6 +535,257 @@ function ManageTab(): React.JSX.Element {
   );
 }
 
+function ChatReviewTab(): React.JSX.Element {
+  const { data: moderation } = useModeration();
+  const invalidate = useInvalidateModeration();
+  const playerName = useAuthStore((s) => s.playerName);
+  const [instances, setInstances] = useState<{ id: string; name: string }[]>([]);
+  const [selectedInstanceId, setSelectedInstanceId] = useState("");
+  const [windowMinutes, setWindowMinutes] = useState(5);
+  const [openSessionId, setOpenSessionId] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    void window.galaxy.instances.list().then((list) => {
+      setInstances(list.map((i) => ({ id: i.id, name: i.name })));
+      if (list.length > 0) setSelectedInstanceId((current) => current || list[0]!.id);
+    });
+  }, []);
+
+  async function createSession(): Promise<void> {
+    if (!selectedInstanceId) return;
+    setBusy(true);
+    await window.galaxy.moderation.createChatReviewSession(selectedInstanceId, windowMinutes);
+    invalidate();
+    setBusy(false);
+  }
+
+  async function toggleFlag(sessionId: string, index: number): Promise<void> {
+    await window.galaxy.moderation.toggleReviewMessageFlag(sessionId, index);
+    invalidate();
+  }
+
+  async function confirm(sessionId: string): Promise<void> {
+    setBusy(true);
+    await window.galaxy.moderation.confirmChatReview(sessionId, playerName ?? "");
+    invalidate();
+    setBusy(false);
+  }
+
+  async function aiCheck(sessionId: string): Promise<void> {
+    setBusy(true);
+    await window.galaxy.moderation.runAiChatCheck(sessionId, playerName ?? "");
+    invalidate();
+    setBusy(false);
+  }
+
+  const sessions = moderation?.chatReviewSessions ?? [];
+
+  return (
+    <div className="admin-console__tab-content">
+      <div className="admin-console__section">
+        <span className="admin-console__section-label">Neue Chat-Prüfung</span>
+        <p className="admin-console__hint">
+          Holt die echten, per /galaxy chat gesendeten Nachrichten der letzten Minuten und legt sie zur Prüfung ab.
+        </p>
+        {instances.length > 0 && (
+          <div className="admin-console__row">
+            <select value={selectedInstanceId} onChange={(e) => setSelectedInstanceId(e.target.value)}>
+              {instances.map((i) => (
+                <option key={i.id} value={i.id}>
+                  {i.name}
+                </option>
+              ))}
+            </select>
+            <input
+              type="number"
+              min={1}
+              value={windowMinutes}
+              onChange={(e) => setWindowMinutes(Number(e.target.value))}
+              style={{ maxWidth: 70 }}
+            />
+            <span>Minuten</span>
+            <button onClick={() => void createSession()} disabled={busy}>
+              Prüfung erstellen
+            </button>
+          </div>
+        )}
+      </div>
+
+      {sessions.length === 0 && <p className="admin-console__hint">Noch keine Chat-Prüfungen.</p>}
+
+      <div className="admin-console__review-list">
+        {sessions.map((session: ChatReviewSession) => {
+          const flaggedCount = session.messages.filter((m) => m.flagged).length;
+          const isOpen = openSessionId === session.id;
+          return (
+            <div className="admin-console__review-session" key={session.id}>
+              <div className="admin-console__review-session-header">
+                <span>
+                  {new Date(session.createdAt).toLocaleString("de-DE")} · {session.windowMinutes} Min ·{" "}
+                  {session.messages.length} Nachrichten
+                  {flaggedCount > 0 && ` · ${flaggedCount} markiert`}
+                </span>
+                <span className={`admin-console__review-status admin-console__review-status--${session.status}`}>
+                  {session.status === "confirmed" ? "Bestätigt" : "Offen"}
+                </span>
+                <button onClick={() => setOpenSessionId(isOpen ? null : session.id)}>
+                  {isOpen ? "Schließen" : "Bearbeiten"}
+                </button>
+              </div>
+
+              {isOpen && (
+                <div className="admin-console__review-body">
+                  {session.messages.length === 0 && (
+                    <p className="admin-console__hint">Keine Nachrichten in diesem Zeitraum.</p>
+                  )}
+                  <div className="admin-console__review-messages">
+                    {session.messages.map((message, index) => (
+                      <label
+                        key={index}
+                        className={`admin-console__review-message ${message.flagged ? "admin-console__review-message--flagged" : ""}`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={message.flagged}
+                          disabled={session.status === "confirmed"}
+                          onChange={() => void toggleFlag(session.id, index)}
+                        />
+                        <span className="admin-console__review-message-time">
+                          {new Date(message.timestamp).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
+                        </span>
+                        <span className="admin-console__review-message-player">{message.playerName}</span>
+                        <span className="admin-console__review-message-text">{message.message}</span>
+                        {message.aiFlagged && (
+                          <span className="admin-console__review-message-ai" title={message.aiReason ?? ""}>
+                            KI: Verstoß
+                          </span>
+                        )}
+                      </label>
+                    ))}
+                  </div>
+
+                  {session.status === "open" && (
+                    <>
+                      {flaggedCount > 0 && (
+                        <div className="admin-console__section">
+                          <span className="admin-console__section-label">Markiert — wird bestätigt für</span>
+                          {session.messages
+                            .filter((m) => m.flagged)
+                            .map((m, i) => (
+                              <div className="admin-console__review-flagged-entry" key={i}>
+                                {m.playerName}: "{m.message}"
+                              </div>
+                            ))}
+                        </div>
+                      )}
+                      <div className="admin-console__row">
+                        <button onClick={() => void confirm(session.id)} disabled={busy || flaggedCount === 0}>
+                          Bestätigen ({flaggedCount})
+                        </button>
+                        <button onClick={() => void aiCheck(session.id)} disabled={busy}>
+                          KI-Check (automatisch)
+                        </button>
+                      </div>
+                      <p className="admin-console__hint">
+                        Verwarnung gilt real (echte Chat-Sperre) nur für dich selbst — bei anderen Spielernamen wird
+                        sie protokolliert und die Benachrichtigung als Text hinterlegt, aber nicht wirklich
+                        zugestellt, solange es keinen echten Server gibt.
+                      </p>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function SupportTab(): React.JSX.Element {
+  const { data: moderation } = useModeration();
+  const invalidate = useInvalidateModeration();
+  const [category, setCategory] = useState<SupportTicketCategory>("bug");
+  const [relatedEntryId, setRelatedEntryId] = useState("");
+  const [message, setMessage] = useState("");
+
+  async function create(): Promise<void> {
+    if (!message.trim()) return;
+    await window.galaxy.moderation.createSupportTicket(category, relatedEntryId || null, message.trim());
+    setMessage("");
+    setRelatedEntryId("");
+    invalidate();
+  }
+
+  async function resolve(id: string): Promise<void> {
+    await window.galaxy.moderation.resolveSupportTicket(id);
+    invalidate();
+  }
+
+  const tickets = moderation?.supportTickets ?? [];
+  const auditLog = moderation?.auditLog ?? [];
+
+  return (
+    <div className="admin-console__tab-content">
+      <div className="admin-console__section">
+        <span className="admin-console__section-label">Neues Ticket</span>
+        <p className="admin-console__hint">
+          Für alles rund um den Launcher selbst — z. B. „Verwarnung 2 war ein Fehler, bitte nochmal prüfen" oder ein
+          gefundener Bug. Bleibt lokal in diesem Log, damit nichts vergessen wird.
+        </p>
+        <div className="admin-console__row">
+          <select value={category} onChange={(e) => setCategory(e.target.value as SupportTicketCategory)}>
+            {(Object.keys(TICKET_CATEGORY_LABELS) as SupportTicketCategory[]).map((c) => (
+              <option key={c} value={c}>
+                {TICKET_CATEGORY_LABELS[c]}
+              </option>
+            ))}
+          </select>
+          {category === "warnAppeal" && (
+            <select value={relatedEntryId} onChange={(e) => setRelatedEntryId(e.target.value)}>
+              <option value="">Log-Eintrag wählen (optional)…</option>
+              {auditLog
+                .filter((e) => e.type === "warn")
+                .map((e) => (
+                  <option key={e.id} value={e.id}>
+                    {e.description.slice(0, 50)}
+                  </option>
+                ))}
+            </select>
+          )}
+        </div>
+        <div className="admin-console__row">
+          <input value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Beschreibung…" />
+          <button onClick={() => void create()} disabled={!message.trim()}>
+            Ticket erstellen
+          </button>
+        </div>
+      </div>
+
+      {tickets.length === 0 && <p className="admin-console__hint">Keine Tickets.</p>}
+      <div className="admin-console__log-list">
+        {tickets.map((ticket) => (
+          <div
+            className={`admin-console__log-entry ${ticket.status === "resolved" ? "admin-console__log-entry--undone" : ""}`}
+            key={ticket.id}
+          >
+            <div className="admin-console__log-type">{TICKET_CATEGORY_LABELS[ticket.category]}</div>
+            <div className="admin-console__log-description">{ticket.message}</div>
+            <div className="admin-console__log-time">{new Date(ticket.createdAt).toLocaleString("de-DE")}</div>
+            {ticket.status === "open" ? (
+              <button onClick={() => void resolve(ticket.id)}>Erledigt</button>
+            ) : (
+              <span className="admin-console__undone-badge">Erledigt</span>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function StatsBar(): React.JSX.Element {
   const { data: moderation } = useModeration();
   const reports = moderation?.reports ?? [];
@@ -505,6 +826,9 @@ export function AdminConsoleView(): React.JSX.Element {
         <button className={tab === "reports" ? "active" : ""} onClick={() => setTab("reports")}>
           Reports
         </button>
+        <button className={tab === "chatReview" ? "active" : ""} onClick={() => setTab("chatReview")}>
+          Chat-Prüfung
+        </button>
         <button className={tab === "players" ? "active" : ""} onClick={() => setTab("players")}>
           Spieler
         </button>
@@ -514,11 +838,16 @@ export function AdminConsoleView(): React.JSX.Element {
         <button className={tab === "manage" ? "active" : ""} onClick={() => setTab("manage")}>
           Verwaltung
         </button>
+        <button className={tab === "support" ? "active" : ""} onClick={() => setTab("support")}>
+          Support
+        </button>
       </div>
       {tab === "reports" && <ReportsTab />}
+      {tab === "chatReview" && <ChatReviewTab />}
       {tab === "players" && <PlayersTab />}
       {tab === "log" && <LogTab />}
       {tab === "manage" && <ManageTab />}
+      {tab === "support" && <SupportTab />}
     </div>
   );
 }

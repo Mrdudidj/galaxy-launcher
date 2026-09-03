@@ -52,6 +52,47 @@ export interface ModerationSettings {
   warningsBeforeEscalation: number;
 }
 
+export interface ChatReviewMessage {
+  timestamp: string;
+  playerName: string;
+  message: string;
+  flagged: boolean;
+  aiFlagged: boolean;
+  aiReason: string | null;
+}
+
+export interface ChatReviewSession {
+  id: string;
+  createdAt: string;
+  instanceId: string;
+  windowMinutes: number;
+  messages: ChatReviewMessage[];
+  status: "open" | "confirmed";
+  confirmedAt: string | null;
+}
+
+export interface PlayerNotification {
+  message: string;
+  createdAt: string;
+}
+
+export interface PlayerRecord {
+  warningCount: number;
+  lastWarnedAt: string | null;
+  notifications: PlayerNotification[];
+}
+
+export type SupportTicketCategory = "warnAppeal" | "bug" | "other";
+
+export interface SupportTicket {
+  id: string;
+  createdAt: string;
+  category: SupportTicketCategory;
+  relatedAuditEntryId: string | null;
+  message: string;
+  status: "open" | "resolved";
+}
+
 export interface ModerationState {
   reports: Report[];
   auditLog: AuditEntry[];
@@ -59,4 +100,11 @@ export interface ModerationState {
   chatBanUntil: string | null;
   accountStatus: AccountStatus | null;
   settings: ModerationSettings;
+  chatReviewSessions: ChatReviewSession[];
+  /** Keyed by in-game player name — separate from the local, real-enforced
+   * warningCount/chatBanUntil above, which only ever applies to whoever is
+   * signed into this launcher install. See moderationStore.ts's
+   * confirmChatReview for how the two connect. */
+  playerRecords: Record<string, PlayerRecord>;
+  supportTickets: SupportTicket[];
 }

@@ -18,7 +18,13 @@ import type {
 import type { DownloadProgress, FabricLoaderSummary, MinecraftVersionSummary } from "../shared/minecraft";
 import type { NewsItem } from "../shared/backend";
 import type { EconomyState, Rank, ShopItem } from "../shared/economy";
-import type { ChatOutboxEntry, ModerationSettings, ModerationState, Report } from "../shared/moderation";
+import type {
+  ChatOutboxEntry,
+  ModerationSettings,
+  ModerationState,
+  Report,
+  SupportTicketCategory
+} from "../shared/moderation";
 import type { SpotifyPlaybackState, SpotifySearchResult } from "../shared/spotify";
 import type { SkinState } from "../shared/skin";
 import type { MinecraftSession } from "../shared/auth";
@@ -124,7 +130,9 @@ const galaxyApi = {
       grantedRank: Rank | null;
       grantedItemName: string | null;
     }> => ipcRenderer.invoke("economy:redeemCode", code),
-    setRank: (rank: Rank): Promise<EconomyState> => ipcRenderer.invoke("economy:setRank", rank)
+    setRank: (rank: Rank): Promise<EconomyState> => ipcRenderer.invoke("economy:setRank", rank),
+    generateAdminCode: (durationDays: number | null): Promise<string> =>
+      ipcRenderer.invoke("economy:generateAdminCode", durationDays)
   },
 
   moderation: {
@@ -149,7 +157,23 @@ const galaxyApi = {
     undoAuditEntry: (entryId: string): Promise<ModerationState> =>
       ipcRenderer.invoke("moderation:undoAuditEntry", entryId),
     updateSettings: (patch: Partial<ModerationSettings>): Promise<ModerationState> =>
-      ipcRenderer.invoke("moderation:updateSettings", patch)
+      ipcRenderer.invoke("moderation:updateSettings", patch),
+    createChatReviewSession: (instanceId: string, windowMinutes: number): Promise<ModerationState> =>
+      ipcRenderer.invoke("moderation:createChatReviewSession", instanceId, windowMinutes),
+    toggleReviewMessageFlag: (sessionId: string, messageIndex: number): Promise<ModerationState> =>
+      ipcRenderer.invoke("moderation:toggleReviewMessageFlag", sessionId, messageIndex),
+    confirmChatReview: (sessionId: string, localPlayerName: string): Promise<ModerationState> =>
+      ipcRenderer.invoke("moderation:confirmChatReview", sessionId, localPlayerName),
+    runAiChatCheck: (sessionId: string, localPlayerName: string): Promise<ModerationState> =>
+      ipcRenderer.invoke("moderation:runAiChatCheck", sessionId, localPlayerName),
+    createSupportTicket: (
+      category: SupportTicketCategory,
+      relatedAuditEntryId: string | null,
+      message: string
+    ): Promise<ModerationState> =>
+      ipcRenderer.invoke("moderation:createSupportTicket", category, relatedAuditEntryId, message),
+    resolveSupportTicket: (id: string): Promise<ModerationState> =>
+      ipcRenderer.invoke("moderation:resolveSupportTicket", id)
   },
 
   skin: {

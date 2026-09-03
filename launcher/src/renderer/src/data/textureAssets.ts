@@ -9,6 +9,7 @@ import starmapHood from "../assets/textures/hats/starmap-hood.png";
 import cometHelmet from "../assets/textures/hats/comet-helmet.png";
 import cometHelmetTail from "../assets/textures/hats/comet-helmet-tail.png";
 import astroVisor from "../assets/textures/hats/astro-visor.png";
+import novaWings from "../assets/textures/wings/nova-wings.png";
 
 const TEXTURE_URLS: Record<string, string> = {
   "nebula-crown-ring.png": nebulaCrownRing,
@@ -17,7 +18,8 @@ const TEXTURE_URLS: Record<string, string> = {
   "starmap-hood.png": starmapHood,
   "comet-helmet.png": cometHelmet,
   "comet-helmet-tail.png": cometHelmetTail,
-  "astro-visor.png": astroVisor
+  "astro-visor.png": astroVisor,
+  "nova-wings.png": novaWings
 };
 
 const loader = new TextureLoader();

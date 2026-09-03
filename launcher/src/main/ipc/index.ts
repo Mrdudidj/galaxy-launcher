@@ -14,19 +14,32 @@ import {
 import { pickFiles, pickSaveLocation } from "../services/dialogs.js";
 import { isGameRunning, killActiveGame, launchInstance } from "../services/minecraft/launchInstance.js";
 import { installMod, searchMods } from "../services/mods/modrinthService.js";
-import { getEconomy, purchaseItem, redeemCode, setEquipped, setRank } from "../services/economy/economyStore.js";
+import {
+  generateAdminCode,
+  getEconomy,
+  purchaseItem,
+  redeemCode,
+  setEquipped,
+  setRank
+} from "../services/economy/economyStore.js";
 import { SHOP_CATALOG } from "../services/economy/shopCatalog.js";
 import {
   adjustCoins,
   approveReport,
+  confirmChatReview,
+  createChatReviewSession,
   createReport,
+  createSupportTicket,
   getModerationState,
   grantItem,
   readChatOutbox,
   rejectReport,
+  resolveSupportTicket,
   revokeItem,
+  runAiChatCheck,
   suspendAccount,
   tempBanAccount,
+  toggleReviewMessageFlag,
   undoAuditEntry,
   updateModerationSettings,
   warnPlayer
@@ -82,7 +95,7 @@ import { getWizardDefaults, updateWizardDefaults } from "../services/instances/w
 import { applyCustomTexture, listTextures, readTexturePng, readTexturePngBatch } from "../services/textures/textureCatalog.js";
 import type { AppSettings, InstanceSettingsPatch, ServerEntry, WizardDefaults } from "../../shared/instance.js";
 import type { Rank } from "../../shared/economy.js";
-import type { ModerationSettings } from "../../shared/moderation.js";
+import type { ModerationSettings, SupportTicketCategory } from "../../shared/moderation.js";
 
 function getLaunchInstanceId(): string | null {
   const arg = process.argv.find((a) => a.startsWith("--instance="));
@@ -218,6 +231,8 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle("economy:setRank", (_event, rank: Rank) => setRank(rank));
 
+  ipcMain.handle("economy:generateAdminCode", (_event, durationDays: number | null) => generateAdminCode(durationDays));
+
   ipcMain.handle("moderation:getState", () => getModerationState());
 
   ipcMain.handle("moderation:readChatOutbox", (_event, instanceId: string) => readChatOutbox(instanceId));
@@ -251,6 +266,30 @@ export function registerIpcHandlers(): void {
   ipcMain.handle("moderation:updateSettings", (_event, patch: Partial<ModerationSettings>) =>
     updateModerationSettings(patch)
   );
+
+  ipcMain.handle("moderation:createChatReviewSession", (_event, instanceId: string, windowMinutes: number) =>
+    createChatReviewSession(instanceId, windowMinutes)
+  );
+
+  ipcMain.handle("moderation:toggleReviewMessageFlag", (_event, sessionId: string, messageIndex: number) =>
+    toggleReviewMessageFlag(sessionId, messageIndex)
+  );
+
+  ipcMain.handle("moderation:confirmChatReview", (_event, sessionId: string, localPlayerName: string) =>
+    confirmChatReview(sessionId, localPlayerName)
+  );
+
+  ipcMain.handle("moderation:runAiChatCheck", (_event, sessionId: string, localPlayerName: string) =>
+    runAiChatCheck(sessionId, localPlayerName)
+  );
+
+  ipcMain.handle(
+    "moderation:createSupportTicket",
+    (_event, category: SupportTicketCategory, relatedAuditEntryId: string | null, message: string) =>
+      createSupportTicket(category, relatedAuditEntryId, message)
+  );
+
+  ipcMain.handle("moderation:resolveSupportTicket", (_event, id: string) => resolveSupportTicket(id));
 
   ipcMain.handle("app:getLaunchInstanceId", () => getLaunchInstanceId());
 

@@ -23,13 +23,22 @@ export async function exportCosmeticsConfig(instanceId: string): Promise<void> {
   const equippedEmoteId =
     SHOP_CATALOG.find((item) => item.category === "emote" && equippedIds.has(item.id))?.id ?? null;
   const equippedPetId = SHOP_CATALOG.find((item) => item.category === "pet" && equippedIds.has(item.id))?.id ?? null;
+  const equippedWingsId =
+    SHOP_CATALOG.find((item) => item.category === "wings" && equippedIds.has(item.id))?.id ?? null;
 
   const configPath = cosmeticsConfigPath(instanceId);
   await mkdir(dirname(configPath), { recursive: true });
   await writeFile(
     configPath,
     JSON.stringify(
-      { glowColor: skin.glowColor, hatId, equippedEmoteId, equippedPetId, chatBanUntil: moderation.chatBanUntil },
+      {
+        glowColor: skin.glowColor,
+        hatId,
+        equippedEmoteId,
+        equippedPetId,
+        equippedWingsId,
+        chatBanUntil: moderation.chatBanUntil
+      },
       null,
       2
     ),

@@ -1,4 +1,4 @@
-export type ShopItemCategory = "emote" | "hat" | "outfit" | "glow" | "pet";
+export type ShopItemCategory = "emote" | "hat" | "outfit" | "glow" | "pet" | "wings";
 
 export type Rank = "member" | "vip" | "admin" | "owner";
 
@@ -35,6 +35,8 @@ export interface EconomyState {
   inventory: InventoryEntry[];
   nameGlowColor: string | null;
   rank: Rank;
+  /** Only meaningful when rank is "admin" — null means it doesn't expire. */
+  adminRankExpiresAt: string | null;
 }
 
 export function effectivePrice(item: ShopItem, rank: Rank): number {

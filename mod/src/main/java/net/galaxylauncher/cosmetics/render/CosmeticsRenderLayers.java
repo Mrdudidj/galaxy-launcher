@@ -11,6 +11,7 @@ public final class CosmeticsRenderLayers {
 			if (entityRenderer instanceof AvatarRenderer<?> avatarRenderer) {
 				registrationHelper.register(new HatRenderLayer(avatarRenderer));
 				registrationHelper.register(new PetRenderLayer(avatarRenderer));
+				registrationHelper.register(new WingRenderLayer(avatarRenderer));
 			}
 		});
 	}

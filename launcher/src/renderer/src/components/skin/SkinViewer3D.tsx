@@ -17,6 +17,7 @@ import {
 import { HAT_GEOMETRY } from "../../data/hatGeometry";
 import { PET_GEOMETRY } from "../../data/petGeometry";
 import { loadCosmeticTexture } from "../../data/textureAssets";
+import { WING_GEOMETRY } from "../../data/wingGeometry";
 import "./SkinViewer3D.css";
 
 export function SkinViewer3D({
@@ -26,7 +27,8 @@ export function SkinViewer3D({
   zoom = 0.8,
   animation,
   hatId = null,
-  petId = null
+  petId = null,
+  wingsId = null
 }: {
   skinUrl: string;
   width?: number;
@@ -39,12 +41,15 @@ export function SkinViewer3D({
   hatId?: string | null;
   /** Equipped pet's shop item id, if any — see petGeometry.ts. */
   petId?: string | null;
+  /** Equipped wings' shop item id, if any — see wingGeometry.ts. */
+  wingsId?: string | null;
 }): React.JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const viewerRef = useRef<SkinViewer | null>(null);
   const hatGroupRef = useRef<Group | null>(null);
   const petGroupRef = useRef<Group | null>(null);
   const petAnimationRef = useRef<number | null>(null);
+  const wingsGroupRef = useRef<Group | null>(null);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
@@ -128,6 +133,34 @@ export function SkinViewer3D({
     viewer.playerObject.skin.head.add(group);
     hatGroupRef.current = group;
   }, [hatId]);
+
+  useEffect(() => {
+    const viewer = viewerRef.current;
+    if (!viewer) return;
+
+    if (wingsGroupRef.current) {
+      viewer.playerObject.skin.body.remove(wingsGroupRef.current);
+      wingsGroupRef.current = null;
+    }
+
+    const def = wingsId ? WING_GEOMETRY[wingsId] : undefined;
+    if (!def) return;
+
+    const group = new Group();
+    for (const box of [def.left, def.right]) {
+      const mesh = new Mesh(
+        new BoxGeometry(...box.size),
+        new MeshBasicMaterial({ map: loadCosmeticTexture(box.texture) })
+      );
+      mesh.position.set(...box.center);
+      mesh.rotation.y = box.rotationY;
+      group.add(mesh);
+    }
+    // Body-attached (not head), same as the mod's WingRenderLayer — follows
+    // body rotation without swinging around on a head-look.
+    viewer.playerObject.skin.body.add(group);
+    wingsGroupRef.current = group;
+  }, [wingsId]);
 
   useEffect(() => {
     const viewer = viewerRef.current;

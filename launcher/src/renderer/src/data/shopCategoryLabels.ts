@@ -5,5 +5,6 @@ export const CATEGORY_LABELS: Record<ShopItemCategory, string> = {
   hat: "Hüte",
   outfit: "Outfits",
   glow: "Leuchtfarben",
-  pet: "Haustiere"
+  pet: "Haustiere",
+  wings: "Schwingen"
 };

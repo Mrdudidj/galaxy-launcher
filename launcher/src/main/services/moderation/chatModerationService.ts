@@ -32,7 +32,10 @@ export async function reviewMessage(messageText: string): Promise<ModerationVerd
       max_tokens: 300,
       system:
         "Du prüfst eine einzelne Chat-Nachricht aus einem Minecraft-Launcher-Chat auf Beleidigungen, " +
-        "Belästigung oder Hassrede. Antworte AUSSCHLIESSLICH mit kompaktem JSON in der Form " +
+        "Belästigung oder Hassrede — unabhängig davon, in welcher Sprache sie geschrieben ist. Achte auch auf " +
+        "absichtlich verkürzte, abgekürzte oder verstümmelte Schreibweisen (z. B. Leetspeak, Sternchen-Zensur, " +
+        "Lautschrift), die eine Beleidigung erkennbar meinen, auch wenn das Wort nicht vollständig ausgeschrieben " +
+        "ist. Antworte AUSSCHLIESSLICH mit kompaktem JSON in der Form " +
         '{"flagged": true oder false, "reason": "Kurze Begründung auf Deutsch"}, kein Text außerhalb des JSON.',
       messages: [{ role: "user", content: messageText }]
     })

@@ -26,6 +26,7 @@ export function LockerView(): React.JSX.Element {
   const equippedEmoteId = ownedItems.find((item) => item.category === "emote" && equippedIds.has(item.id))?.id ?? null;
   const equippedHatId = ownedItems.find((item) => item.category === "hat" && equippedIds.has(item.id))?.id ?? null;
   const equippedPetId = ownedItems.find((item) => item.category === "pet" && equippedIds.has(item.id))?.id ?? null;
+  const equippedWingsId = ownedItems.find((item) => item.category === "wings" && equippedIds.has(item.id))?.id ?? null;
   const equippedAnimation = useMemo(
     () => (equippedEmoteId ? getEmoteAnimation(equippedEmoteId) : null),
     [equippedEmoteId]
@@ -58,6 +59,7 @@ export function LockerView(): React.JSX.Element {
             animation={equippedAnimation}
             hatId={equippedHatId}
             petId={equippedPetId}
+            wingsId={equippedWingsId}
           />
           <div className="locker-view__equipped-badges">
             {ownedItems

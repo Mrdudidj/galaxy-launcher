@@ -274,6 +274,100 @@ section h2 {
   margin-bottom: 40px;
 }
 
+/* Stat strip — numbers count up once when scrolled into view (see the
+   IntersectionObserver script in index.html); no continuous animation, so
+   this costs nothing once it's played. */
+
+.stats {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 20px;
+  text-align: center;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat__number {
+  font-size: 40px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--nebula-magenta), var(--accent) 55%, var(--nebula-cyan));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.stat__label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* Comparison table */
+
+.compare-table {
+  max-width: 640px;
+  margin: 0 auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--bg-panel);
+}
+
+.compare-row {
+  display: grid;
+  grid-template-columns: 1fr 90px 90px;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 14px;
+}
+
+.compare-row:last-child {
+  border-bottom: none;
+}
+
+.compare-row--header {
+  font-weight: 700;
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.compare-row span:nth-child(2),
+.compare-row span:nth-child(3) {
+  text-align: center;
+}
+
+.compare-row__highlight {
+  color: var(--accent-glow);
+}
+
+.compare-no {
+  color: var(--text-secondary);
+}
+
+.compare-yes {
+  color: #4ade80;
+  font-weight: 700;
+}
+
+.compare__hint {
+  max-width: 480px;
+  margin: 20px auto 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
 /* Feature grid */
 
 .feature-grid {
@@ -833,6 +927,32 @@ section h2 {
 
 .cta {
   text-align: center;
+}
+
+.cta__hint {
+  color: var(--text-secondary);
+  margin: -16px 0 28px;
+}
+
+.cta__button {
+  display: inline-flex;
+  align-items: center;
+  padding: 16px 32px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--nebula-magenta), var(--accent) 55%, var(--nebula-cyan));
+  color: white;
+  font-weight: 700;
+  text-decoration: none;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.cta__button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(139, 92, 246, 0.35);
+}
+
+.cta__button:active {
+  transform: scale(0.97);
 }
 
 /* Legal pages (Impressum, Datenschutz) */

@@ -71,6 +71,27 @@
       <p class="hero__hint">Kostenlos. Quelloffen auf <a href="https://github.com/Mrdudidj/galaxy-launcher" target="_blank" rel="noopener">GitHub</a>.</p>
     </section>
 
+    <section class="stats reveal">
+      <div class="stats-grid">
+        <div class="stat">
+          <span class="stat__number" data-count-to="24">0</span>
+          <span class="stat__label">Kosmetik-Items</span>
+        </div>
+        <div class="stat">
+          <span class="stat__number" data-count-to="11">0</span>
+          <span class="stat__label">Handanimierte Emotes</span>
+        </div>
+        <div class="stat">
+          <span class="stat__number" data-count-to="2">0</span>
+          <span class="stat__label">Unterstützte Betriebssysteme</span>
+        </div>
+        <div class="stat">
+          <span class="stat__number" data-count-to="100">0</span>
+          <span class="stat__label">% quelloffen</span>
+        </div>
+      </div>
+    </section>
+
     <section id="pvp" class="pvp reveal">
       <div class="pvp__inner">
         <span class="pvp__eyebrow">SMP &amp; PvP</span>
@@ -133,6 +154,53 @@
           <p>Chat der letzten Minuten durchsehen und Verstöße markieren, per Knopfdruck automatisch von einer KI prüfen lassen, echtes Warn-/Sperr-System mit vollständigem Log und Rückgängig-Funktion — plus zeitlich befristete Admin-Codes für Vertraute.</p>
         </article>
       </div>
+    </section>
+
+    <section id="compare" class="compare reveal">
+      <h2>Galaxy Launcher vs. Standard-Launcher</h2>
+      <div class="compare-table">
+        <div class="compare-row compare-row--header">
+          <span></span>
+          <span>Standard</span>
+          <span class="compare-row__highlight">Galaxy</span>
+        </div>
+        <div class="compare-row">
+          <span>Kosmetik im Spiel sichtbar</span>
+          <span class="compare-no">–</span>
+          <span class="compare-yes">✓</span>
+        </div>
+        <div class="compare-row">
+          <span>Mod-Suche eingebaut</span>
+          <span class="compare-no">–</span>
+          <span class="compare-yes">✓</span>
+        </div>
+        <div class="compare-row">
+          <span>Skin-Editor im Launcher</span>
+          <span class="compare-no">–</span>
+          <span class="compare-yes">✓</span>
+        </div>
+        <div class="compare-row">
+          <span>PvP-HUD (CPS, Tasten, Fullbright)</span>
+          <span class="compare-no">–</span>
+          <span class="compare-yes">✓</span>
+        </div>
+        <div class="compare-row">
+          <span>Spotify- &amp; Discord-Anbindung</span>
+          <span class="compare-no">–</span>
+          <span class="compare-yes">✓</span>
+        </div>
+        <div class="compare-row">
+          <span>Admin-Konsole für eigene Server</span>
+          <span class="compare-no">–</span>
+          <span class="compare-yes">✓</span>
+        </div>
+        <div class="compare-row">
+          <span>Kostenlos</span>
+          <span class="compare-yes">✓</span>
+          <span class="compare-yes">✓</span>
+        </div>
+      </div>
+      <p class="compare__hint">Ehrlicher Vergleich mit dem offiziellen Microsoft-Launcher, nicht mit anderen Community-Launchern.</p>
     </section>
 
     <section id="cosmetics" class="cosmetics reveal">
@@ -343,22 +411,8 @@ sudo dpkg -i galaxy-launcher.deb</code></pre>
 
     <section class="cta reveal">
       <h2>Bereit zum Start?</h2>
-      <div class="hero__downloads">
-        <a class="download-button download-button--windows" href="https://github.com/Mrdudidj/galaxy-launcher/releases/latest">
-          <span class="download-button__icon" aria-hidden="true">⊞</span>
-          <span>
-            <strong>Download für Windows</strong>
-            <small>.exe · GitHub Releases</small>
-          </span>
-        </a>
-        <a class="download-button download-button--linux" href="https://github.com/Mrdudidj/galaxy-launcher/releases/latest">
-          <span class="download-button__icon" aria-hidden="true">🐧</span>
-          <span>
-            <strong>Download für Linux</strong>
-            <small>AppImage · deb</small>
-          </span>
-        </a>
-      </div>
+      <p class="cta__hint">Kostenlos, quelloffen, keine versteckten Käufe — installiert in ein paar Minuten.</p>
+      <a class="cta__button" href="#install">Installationsanleitung öffnen</a>
     </section>
   </main>
 
@@ -372,12 +426,29 @@ sudo dpkg -i galaxy-launcher.deb</code></pre>
     // sections in as they enter view instead of the page reading as a single
     // static document. Falls back to fully visible (see the plain .reveal
     // rule in styles.css) if IntersectionObserver isn't available.
+    // Counts one .stat__number up from 0 to its data-count-to over ~1s —
+    // runs once (triggered by the same reveal below), not a continuous
+    // animation, so it costs nothing after it plays.
+    function animateCount(el) {
+      const target = Number(el.dataset.countTo);
+      const durationMs = 900;
+      const start = performance.now();
+      function tick(now) {
+        const progress = Math.min(1, (now - start) / durationMs);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.round(target * eased);
+        if (progress < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+
     if ("IntersectionObserver" in window) {
       const observer = new IntersectionObserver(
         (entries) => {
           for (const entry of entries) {
             if (entry.isIntersecting) {
               entry.target.classList.add("visible");
+              entry.target.querySelectorAll("[data-count-to]").forEach(animateCount);
               observer.unobserve(entry.target);
             }
           }
@@ -387,6 +458,7 @@ sudo dpkg -i galaxy-launcher.deb</code></pre>
       document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
     } else {
       document.querySelectorAll(".reveal").forEach((el) => el.classList.add("visible"));
+      document.querySelectorAll("[data-count-to]").forEach((el) => (el.textContent = el.dataset.countTo));
     }
 
     // Copy-to-clipboard for the install command blocks — there's no CSS-only

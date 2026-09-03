@@ -128,8 +128,8 @@ export const SHOP_CATALOG: ShopItem[] = [
     category: "hat",
     price: 350,
     icon: "☄",
-    colorFrom: "#22d3ee",
-    colorTo: "#0ea5e9"
+    colorFrom: "#eff6ff",
+    colorTo: "#3b82f6"
   },
   {
     id: "hat-astro-visor",
@@ -138,8 +138,8 @@ export const SHOP_CATALOG: ShopItem[] = [
     category: "hat",
     price: 200,
     icon: "🥽",
-    colorFrom: "#64748b",
-    colorTo: "#22d3ee"
+    colorFrom: "#4ade80",
+    colorTo: "#064e3b"
   },
   {
     id: "wings-nova",

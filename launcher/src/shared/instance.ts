@@ -52,6 +52,22 @@ export interface ModSuggestion {
   reason: string;
 }
 
+export interface CrashAnalysis {
+  summary: string;
+  likelyCause: string;
+  suggestedFix: string;
+}
+
+export interface WorldStats {
+  worldName: string;
+  playTimeSeconds: number;
+  blocksMined: number;
+  mobsKilled: number;
+  jumps: number;
+  deaths: number;
+  advancementsCompleted: number;
+}
+
 export interface ModrinthSearchHit {
   projectId: string;
   title: string;

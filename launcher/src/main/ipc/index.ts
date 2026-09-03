@@ -2,6 +2,7 @@ import { BrowserWindow, ipcMain } from "electron";
 import { writeFile } from "node:fs/promises";
 import { hasAiKey, setAiKey, clearAiKey } from "../services/ai/aiKeyStore.js";
 import { suggestMods } from "../services/ai/modSuggestionService.js";
+import { analyzeCrash } from "../services/ai/crashAnalysisService.js";
 import { isAuthConfigured, loginInteractive, loginSilent, logout as msaLogout } from "../services/auth/microsoftAuth.js";
 import { getNews } from "../services/backend/backendClient.js";
 import {
@@ -83,6 +84,7 @@ import {
   removeResourcePack,
   writeServers
 } from "../services/instances/instanceFiles.js";
+import { getWorldStats } from "../services/instances/worldStats.js";
 import type { CreateInstanceInput } from "../services/instances/instanceStore.js";
 import {
   createInstance,
@@ -133,6 +135,10 @@ export function registerIpcHandlers(): void {
   ipcMain.handle("instances:copyKeybinds", (_event, fromId: string, toId: string) => copyKeybinds(fromId, toId));
 
   ipcMain.handle("instances:listWorlds", (_event, instanceId: string) => listWorlds(instanceId));
+
+  ipcMain.handle("instances:getWorldStats", (_event, instanceId: string, worldName: string) =>
+    getWorldStats(instanceId, worldName)
+  );
 
   ipcMain.handle("instances:copyWorld", (_event, fromId: string, toId: string, worldName: string) =>
     copyWorld(fromId, toId, worldName)
@@ -310,6 +316,8 @@ export function registerIpcHandlers(): void {
   ipcMain.handle("ai:suggestMods", (_event, minecraftVersion: string, installedMods: string[], prompt: string) =>
     suggestMods(minecraftVersion, installedMods, prompt)
   );
+
+  ipcMain.handle("ai:analyzeCrash", (_event, logTail: string) => analyzeCrash(logTail));
 
   ipcMain.handle("settings:updateDiscordRpc", (_event, patch: { enabled?: boolean; clientId?: string | null }) =>
     updateDiscordRpcSettings(patch)

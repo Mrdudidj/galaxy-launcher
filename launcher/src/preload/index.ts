@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer, type IpcRendererEvent } from "electron";
 import type { Instance } from "@galaxy-launcher/shared-types";
 import type {
   AppSettings,
+  CrashAnalysis,
   CreateInstanceInput,
   DiscordRpcSettings,
   InstanceSettingsPatch,
@@ -13,7 +14,8 @@ import type {
   SpotifySettings,
   StartInstanceDownloadInput,
   TextureEntry,
-  WizardDefaults
+  WizardDefaults,
+  WorldStats
 } from "../shared/instance";
 import type { DownloadProgress, FabricLoaderSummary, MinecraftVersionSummary } from "../shared/minecraft";
 import type { NewsItem } from "../shared/backend";
@@ -50,6 +52,8 @@ const galaxyApi = {
     copyKeybinds: (fromId: string, toId: string): Promise<void> =>
       ipcRenderer.invoke("instances:copyKeybinds", fromId, toId),
     listWorlds: (instanceId: string): Promise<string[]> => ipcRenderer.invoke("instances:listWorlds", instanceId),
+    getWorldStats: (instanceId: string, worldName: string): Promise<WorldStats | null> =>
+      ipcRenderer.invoke("instances:getWorldStats", instanceId, worldName),
     copyWorld: (fromId: string, toId: string, worldName: string): Promise<void> =>
       ipcRenderer.invoke("instances:copyWorld", fromId, toId, worldName),
     applyDefaultMods: (instanceId: string): Promise<void> =>
@@ -204,7 +208,8 @@ const galaxyApi = {
     setKey: (key: string): Promise<void> => ipcRenderer.invoke("ai:setKey", key),
     clearKey: (): Promise<void> => ipcRenderer.invoke("ai:clearKey"),
     suggestMods: (minecraftVersion: string, installedMods: string[], prompt: string): Promise<ModSuggestion[]> =>
-      ipcRenderer.invoke("ai:suggestMods", minecraftVersion, installedMods, prompt)
+      ipcRenderer.invoke("ai:suggestMods", minecraftVersion, installedMods, prompt),
+    analyzeCrash: (logTail: string): Promise<CrashAnalysis> => ipcRenderer.invoke("ai:analyzeCrash", logTail)
   },
 
   discord: {

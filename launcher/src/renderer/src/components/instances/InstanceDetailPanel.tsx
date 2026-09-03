@@ -1,7 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import type { Instance } from "@galaxy-launcher/shared-types";
 import { getErrorMessage } from "../../api/ipcError";
-import type { ModInstallResult, ModrinthSearchHit, ModSuggestion, ServerEntry } from "../../../../shared/instance";
+import type {
+  CrashAnalysis,
+  ModInstallResult,
+  ModrinthSearchHit,
+  ModSuggestion,
+  ServerEntry,
+  WorldStats
+} from "../../../../shared/instance";
 import { useLaunchStore } from "../../state/launchStore";
 import { DownloadButton } from "./DownloadButton";
 import { InstanceSettingsPanel } from "./InstanceSettingsPanel";
@@ -12,7 +19,7 @@ type Tab = "overview" | "mods" | "worlds" | "servers" | "resourcePacks" | "conso
 const TABS: { tab: Tab; label: string }[] = [
   { tab: "overview", label: "Übersicht" },
   { tab: "mods", label: "Mods" },
-  { tab: "worlds", label: "Welten" },
+  { tab: "worlds", label: "Welten & Statistiken" },
   { tab: "servers", label: "Server" },
   { tab: "resourcePacks", label: "Ressourcenpakete" },
   { tab: "console", label: "Konsole" }
@@ -209,8 +216,58 @@ function ModsTab({
   );
 }
 
+function formatPlayTime(seconds: number): string {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  if (hours === 0) return `${minutes} Min`;
+  return `${hours} Std ${minutes} Min`;
+}
+
+function WorldStatsDashboard({ instanceId, worldName }: { instanceId: string; worldName: string }): React.JSX.Element {
+  const [stats, setStats] = useState<WorldStats | null | undefined>(undefined);
+
+  useEffect(() => {
+    void window.galaxy.instances.getWorldStats(instanceId, worldName).then(setStats);
+  }, [instanceId, worldName]);
+
+  if (stats === undefined) return <p className="instance-detail-panel__hint">Lade Statistiken…</p>;
+  if (stats === null) {
+    return <p className="instance-detail-panel__hint">Noch keine Statistiken — spiel zuerst ein bisschen in dieser Welt.</p>;
+  }
+
+  return (
+    <div className="instance-detail-panel__stats-grid">
+      <div className="instance-detail-panel__stat-tile">
+        <span className="instance-detail-panel__stat-value">{formatPlayTime(stats.playTimeSeconds)}</span>
+        <span className="instance-detail-panel__stat-label">Spielzeit</span>
+      </div>
+      <div className="instance-detail-panel__stat-tile">
+        <span className="instance-detail-panel__stat-value">{stats.blocksMined.toLocaleString("de-DE")}</span>
+        <span className="instance-detail-panel__stat-label">Blöcke abgebaut</span>
+      </div>
+      <div className="instance-detail-panel__stat-tile">
+        <span className="instance-detail-panel__stat-value">{stats.mobsKilled.toLocaleString("de-DE")}</span>
+        <span className="instance-detail-panel__stat-label">Mobs besiegt</span>
+      </div>
+      <div className="instance-detail-panel__stat-tile">
+        <span className="instance-detail-panel__stat-value">{stats.advancementsCompleted}</span>
+        <span className="instance-detail-panel__stat-label">Errungenschaften</span>
+      </div>
+      <div className="instance-detail-panel__stat-tile">
+        <span className="instance-detail-panel__stat-value">{stats.jumps.toLocaleString("de-DE")}</span>
+        <span className="instance-detail-panel__stat-label">Sprünge</span>
+      </div>
+      <div className="instance-detail-panel__stat-tile">
+        <span className="instance-detail-panel__stat-value">{stats.deaths.toLocaleString("de-DE")}</span>
+        <span className="instance-detail-panel__stat-label">Tode</span>
+      </div>
+    </div>
+  );
+}
+
 function WorldsTab({ instance }: { instance: Instance }): React.JSX.Element {
   const [worlds, setWorlds] = useState<string[] | null>(null);
+  const [openWorld, setOpenWorld] = useState<string | null>(null);
 
   useEffect(() => {
     void window.galaxy.instances.listWorlds(instance.id).then(setWorlds);
@@ -222,8 +279,15 @@ function WorldsTab({ instance }: { instance: Instance }): React.JSX.Element {
       {worlds?.length === 0 && <p className="instance-detail-panel__hint">Noch keine Welten gespielt.</p>}
       <div className="instance-detail-panel__list">
         {worlds?.map((world) => (
-          <div className="instance-detail-panel__list-item" key={world}>
-            <span>{world}</span>
+          <div className="instance-detail-panel__world-entry" key={world}>
+            <button
+              className="instance-detail-panel__list-item instance-detail-panel__world-toggle"
+              onClick={() => setOpenWorld(openWorld === world ? null : world)}
+            >
+              <span>{world}</span>
+              <span>{openWorld === world ? "Statistiken ausblenden ▲" : "Statistiken anzeigen ▼"}</span>
+            </button>
+            {openWorld === world && <WorldStatsDashboard instanceId={instance.id} worldName={world} />}
           </div>
         ))}
       </div>
@@ -359,9 +423,36 @@ function ConsoleTab({
     (phase === "starting" || phase === "downloading-java" || phase === "running");
   const isDownloaded = instance.resolvedVersionId != null;
 
+  const [crashAnalysis, setCrashAnalysis] = useState<CrashAnalysis | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analyzeError, setAnalyzeError] = useState<string | null>(null);
+
+  async function handleAnalyzeCrash(): Promise<void> {
+    setAnalyzing(true);
+    setAnalyzeError(null);
+    setCrashAnalysis(null);
+    try {
+      const tail = logs.slice(-150).join("\n");
+      const result = await window.galaxy.ai.analyzeCrash(tail);
+      setCrashAnalysis(result);
+    } catch (error) {
+      setAnalyzeError(getErrorMessage(error, "Analyse fehlgeschlagen."));
+    } finally {
+      setAnalyzing(false);
+    }
+  }
+
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ block: "end" });
   }, [logs]);
+
+  // A fresh run should never show a stale analysis of the previous crash.
+  useEffect(() => {
+    if (phase !== "crashed") {
+      setCrashAnalysis(null);
+      setAnalyzeError(null);
+    }
+  }, [phase]);
 
   let label = "▶ Starten";
   let disabled = false;
@@ -417,7 +508,26 @@ function ConsoleTab({
           />
         )}
         {hint && <span className="instance-detail-panel__hint">{hint}</span>}
+        {isThis && phase === "crashed" && (
+          <button className="instance-detail-panel__ai-crash-button" onClick={() => void handleAnalyzeCrash()} disabled={analyzing}>
+            {analyzing ? "Analysiere…" : "🔍 Was ist schiefgelaufen? (KI)"}
+          </button>
+        )}
       </div>
+      {analyzeError && <p className="instance-detail-panel__ai-crash-error">{analyzeError}</p>}
+      {crashAnalysis && (
+        <div className="instance-detail-panel__ai-crash-result">
+          <div>
+            <strong>Was passiert ist:</strong> {crashAnalysis.summary}
+          </div>
+          <div>
+            <strong>Wahrscheinliche Ursache:</strong> {crashAnalysis.likelyCause}
+          </div>
+          <div>
+            <strong>Vorschlag:</strong> {crashAnalysis.suggestedFix}
+          </div>
+        </div>
+      )}
       <div className="instance-detail-panel__console">
         {!isThis && (
           <div className="instance-detail-panel__console-line instance-detail-panel__console-line--muted">
